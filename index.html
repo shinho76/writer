@@ -1,0 +1,463 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>블로그 글 목록</title>
+<style>
+*{box-sizing:border-box}
+html,body{margin:0;height:100%}
+body{background:#f5f6f7;color:#333;font-family:"Nanum Gothic","NanumGothic","Pretendard","Apple SD Gothic Neo","Malgun Gothic","Noto Sans KR",sans-serif;font-size:16px;line-height:1.85;word-break:keep-all;overflow-wrap:break-word}
+.layout{display:flex;min-height:100%}
+.sidebar{position:fixed;top:0;left:0;bottom:0;width:300px;background:#fff;border-right:1px solid #e5e5e5;overflow-y:auto;padding:24px 0;z-index:20}
+.sidebar .brand{margin:0 24px 16px;font-size:13px;font-weight:700;color:#03c75a;letter-spacing:.04em}
+.sidebar ul{list-style:none;margin:0;padding:0}
+.sidebar li a{display:block;padding:12px 24px;font-size:15px;line-height:1.5;color:#444;text-decoration:none;border-left:4px solid transparent}
+.sidebar li a:hover{background:#f5f6f7}
+.sidebar li a.active{color:#111;font-weight:700;background:#f0faf4;border-left-color:#03c75a}
+.menu-btn{display:none;position:fixed;top:12px;left:12px;z-index:30;border:1px solid #ddd;background:#fff;border-radius:8px;padding:8px 12px;font-size:14px;font-family:inherit;color:#333;cursor:pointer}
+.backdrop{display:none;position:fixed;inset:0;background:rgba(0,0,0,.35);z-index:15}
+main{margin-left:300px;flex:1;min-width:0}
+.post{display:none;max-width:700px;margin:32px auto;background:#fff;padding:48px 28px}
+.post.active{display:block}
+.post h1{font-size:30px;font-weight:800;color:#111;line-height:1.4;margin:0 0 20px}
+.post p.lead{font-size:15px;color:#777;margin:0 0 32px;padding-bottom:20px;border-bottom:1px solid #e5e5e5}
+.post h2{font-size:22px;font-weight:700;color:#111;line-height:1.5;margin:56px 0 16px;padding-left:14px;border-left:4px solid #03c75a}
+.post h3{font-size:18px;font-weight:700;color:#111;margin:36px 0 12px}
+.post p{font-size:16px;font-weight:400;margin:0 0 1.3em}
+.post strong{font-weight:700}
+.post figure{margin:0}
+.post img{max-width:100%;height:auto;display:block;margin:32px auto;border:1px solid #ececec;border-radius:8px}
+.post hr{border:0;border-top:1px solid #e5e5e5;margin:44px 0}
+.post a,.post a:visited{color:#1a6ed8;text-decoration:underline}
+.post ul,.post ol{margin:0 0 1.3em;padding-left:22px}
+.post ul.refs{font-size:14px;color:#666;line-height:1.7}
+.post ul.refs li{font-size:14px;margin-bottom:4px}
+.post p.tags{margin:0;padding-top:24px;border-top:1px solid #e5e5e5}
+.post hr + p.tags{border-top:0;padding-top:0;margin-top:-20px}
+.post p.tags span{display:inline-block;background:#eef1f4;color:#555;font-size:14px;line-height:1.4;padding:6px 12px;border-radius:999px;margin:0 6px 8px 0}
+.post .todo{background:#fff3bf;color:#8a6d00;border-radius:6px;font-weight:700;padding:2px 8px}
+.post .missing{background:#ffe3e3;border:1px dashed #e03131;color:#c92a2a;padding:12px 16px;margin:16px 0;border-radius:6px}
+.post blockquote{margin:0 0 1.3em;padding:16px 20px;border-left:4px solid #d0d5da;background:#f8f9fa}
+.post blockquote p{margin:0}
+.post code{background:#f1f3f5;border-radius:4px;font-family:Consolas,"Courier New",monospace;font-size:.9em;padding:1px 5px}
+.post pre{background:#1e1e2e;color:#e6e6f0;padding:20px;border-radius:8px;overflow-x:auto}
+.post pre code{background:none;padding:0;color:inherit}
+.post .table-wrap{overflow-x:auto}
+.post table{width:100%;border-collapse:collapse}
+.post th,.post td{padding:12px 14px;border:1px solid #e3e6e9}
+.post th{background:#f3f5f7}
+.empty{max-width:700px;margin:80px auto;padding:0 24px;color:#777;text-align:center}
+@media (max-width:860px){
+  .sidebar{transform:translateX(-100%);transition:transform .2s;box-shadow:none}
+  body.nav-open .sidebar{transform:none;box-shadow:2px 0 12px rgba(0,0,0,.15)}
+  body.nav-open .backdrop{display:block}
+  .menu-btn{display:block}
+  main{margin-left:0}
+  .post{margin:0;padding:64px 16px 32px}
+}
+</style>
+</head>
+<body>
+<button class="menu-btn" type="button" aria-label="글 목록 열기">글 목록</button>
+<div class="backdrop"></div>
+<div class="layout">
+  <nav class="sidebar" aria-label="글 목록">
+    <div class="brand">POSTS</div>
+    <ul>
+      <li><a href="#학교-친구없을때-정서-극복" data-slug="학교-친구없을때-정서-극복">친구가 없을 때 정서적 어려움 극복 방안</a></li>
+      <li><a href="#성경-자녀-노엽게-하지-말라" data-slug="성경-자녀-노엽게-하지-말라">자녀를 노엽게 하지 말라는 말의 뜻</a></li>
+      <li><a href="#성경-자녀양육" data-slug="성경-자녀양육">성경 자녀양육, 다섯 구절로 읽어본다</a></li>
+      <li><a href="#성경-남편-아내-자녀의-도리" data-slug="성경-남편-아내-자녀의-도리">성경이 말하는 남편과 아내, 자녀의 도리</a></li>
+    </ul>
+  </nav>
+  <main>
+    <article class="post" data-slug="학교-친구없을때-정서-극복">
+<h1>친구가 없을 때 정서적 어려움 극복 방안</h1>
+<p class="lead">2026년 10월 기준으로 쓴 글이다. 한국 통계 일부는 발행일을 확인하지 못한 웹진에 기대고 있고, 효과 연구 한 편은 동료심사 전 프리프린트다. 진단이나 치료를 말하는 글이 아니며, 방법마다 근거 소스의 성격을 함께 적었다.</p>
+<p>“친구가 없을 때, 학교에서는 어떻게 지내야 하나요?”</p>
+<p>이런 질문을 품은 학생이 있을 것이다. 그 곁에서 같은 질문을 속으로 삼키는 부모와 교사도 있을 것이다.</p>
+<p>이 글은 하나의 흐름으로 간다. 먼저 외로움이 무엇인지 보고, 통계를 보고, 따돌림과의 구분을 짚는다. 그다음 학생, 부모, 교사에게 차례로 말을 건넨다. 학생에게는 ‘그대’라고 부르고, 어른에게는 ‘부모와 교사 분들’이라고 부르겠다.</p>
+<p>공공기관, 국제기구, 연구 자료에 적힌 것만 옮겼다. 자료에 없는 요령은 만들지 않았다. 확인하지 못한 것은 확인하지 못했다고 쓴다.</p>
+<p><span class="todo">TODO: 직접 경험 넣기 - 학창 시절 친구 문제로 힘들었거나 곁에서 지켜본 경험이 있다면, 감정 없이 사실만 두세 문장</span></p>
+<p>아래 그림은 이 글 전체에서 쓰는 두 개념을 WHO의 구분대로 나란히 놓은 것이다. 설명은 첫 번째 소제목에서 이어진다.</p>
+<figure><img src="output/학교-친구없을때-정서-극복/images/thumbnail.png" alt="&#x27;WHO의 구분&#x27; 2단 카드. 왼쪽 카드는 외로움(원하거나 필요한 사회적 연결과 실제 연결 사이의 격차에서 오는 주관적 감정), 오른쪽 카드는 사회적 고립(관계·역할·상호작용이 적은 객관적 상태). 출처 WHO 사회적 연결 위원회, 2025-06-30. 1:1, 두 카드를 중앙에 배치" loading="lazy"></figure>
+<hr>
+<h2>친구가 없으면 곧 외로운 걸까?</h2>
+<p>곧바로 같다고 보기는 어렵다. WHO는 외로움을 “원하는 연결과 실제 연결 사이 격차에서 오는 주관적이고 고통스러운 감정”으로 정의한다. 사회적 고립은 관계와 역할, 상호작용이 적은 객관적 상태로 따로 구분한다.</p>
+<p>외로움은 친구가 몇 명이냐를 세어서 나오는 숫자가 아니라, 바라는 관계와 실제 관계의 간격에서 나오는 감정이다. 이 정의에서 보면 친구가 적어도 바라는 수준과 맞으면 외로움과는 다를 수 있다. 다만 이 해석을 직접 밝힌 문장은 소스에 없고, 정의에서 내가 추론한 것이다.</p>
+<p>혼자 있음(solitude)도 외로움과 구분된다. 청소년기(11~19세)를 다룬 학술 리뷰는 혼자 있을 때 화면 시청, 숙제, 음악 듣기를 주로 한다고 정리한다. 이 리뷰에서 자발적으로 택한 혼자 있음은 더 나은 결과와 이어졌다. 강요된 혼자 있음이나 불안한 사회 상황을 피하려는 혼자 있음은 불안과 부정적 정서와 이어졌다.</p>
+<p>그러니 친구가 없을 때 중요한 것은 혼자인가 아닌가가 아니라, 왜 혼자인가이다. 연구 용어로 사교를 크게 원하지 않아 혼자인 청소년이 사회적 상황을 피하려는 또래보다 나은 결과를 보였다는 대목도 있다. 한계도 분명하다. 6~9세 아동기를 다룬 연구는 이 리뷰에서 한 편뿐이라, 초등 저학년에 그대로 옮기기는 어렵다.</p>
+<figure><img src="output/학교-친구없을때-정서-극복/images/body-1.png" alt="혼자 있음의 두 갈래 비교 표. 열은 &#x27;자발적으로 택한 혼자 있음&#x27;과 &#x27;강요되었거나 불안한 사회 상황을 피하려는 혼자 있음&#x27;, 행은 &#x27;연결된 결과&#x27;(더 나은 적응 / 불안·부정 정서). 하단 각주에 &#x27;청소년기(11~19세) 학술 리뷰, Frontiers in Psychiatry 2023, 6~9세 연구는 한 편&#x27;" loading="lazy"></figure>
+<p>위 표는 그 리뷰의 결과를 두 갈래로 줄인 것이다. 사람의 상태를 판정하는 표가 아니라, 연구가 본 경향을 정리한 표다.</p>
+<p>친구의 수와 질은 어떨까? 토론토 메트로폴리탄대 Ryan J. Persram은 2026년 9월 The Conversation에 기존 연구를 종합한 글을 썼다. 높은 질의 우정은 사회·정서적 어려움의 완충이 될 수 있고, 영향도 더 오래 갈 수 있다고 한다.</p>
+<p>친구가 많을수록 불안과 우울이 적게 나타나는 현상은, 질 높은 관계가 하나라도 생길 가능성이 커지기 때문일 가능성이 크다고 그는 설명한다. 그렇다고 친구 수가 전혀 무관하다는 말은 아니다. 좋은 우정에도 갈등은 있다. 이 글은 전문가가 쓴 종합 해설이지 단일 원저 연구가 아니라는 점도 밝혀 둔다.</p>
+<hr>
+<h2>외로움을 겪는 학생은 얼마나 될까?</h2>
+<p>한국 조사를 인용한 웹진에 따르면 아동청소년 3명 중 1명이 ‘이유 없이 외로웠던 경험’이 있다. 이 수치에는 단서가 붙는다. 조사 주체와 한계를 함께 적는다.</p>
+<p>이 웹진은 교육정책네트워크 정보센터(KEDI)에 실린 글이다. 발행일은 확인하지 못했다. 웹진은 해당 조사를 ‘통계청 국가승인통계 아동청소년 인권실태조사’로 서술하고, 사회적 관계망과 외로움 항목은 2023년에 추가되었다고 쓴다. 그런데 여성가족부의 「2025 청소년 통계」 보도자료(2025년 5월 27일 발표)는 같은 조사를 한국청소년정책연구원의 아동·청소년 인권실태조사로 표기한다.</p>
+<p>두 표기가 다른 이유를 나는 알 수 없다. 어느 쪽이 맞는지 판정하지 않는다. 원 보고서는 열람하지 못했고, 표본의 상세와 이 수치의 조사 연도도 확인하지 못했다. 인용하려는 분들은 원 보고서를 먼저 확인하기를 권한다.</p>
+<p>웹진은 코로나19 이후 초등학생과 중학생의 외로움 경험 비율이 올랐고, 초등학생의 증가 추세가 중고생보다 두드러진다고 해석한다. 고립감을 느끼는 학생 중 4명 중 1명(25.3%)은 그 상태가 2년 이상 이어졌다. 초·중·고를 나란히 비교한 한국 수치는 확인하지 못했다.</p>
+<figure><img src="output/학교-친구없을때-정서-극복/images/body-2.png" alt="수치 타일 카드 6칸. &#x27;3명 중 1명 - 이유 없이 외로웠던 경험(한국 아동청소년, 웹진 서술)&#x27;, &#x27;9.5% - 외부적 고립&#x27;, &#x27;13.9% - 스스로 고립되었다고 인지&#x27;, &#x27;1.4% - ‘항상’ 고립&#x27;, &#x27;25.3% - 고립감을 느끼는 학생 중 2년 이상 지속&#x27;, &#x27;21% - 청소년 외로움 비율(WHO, 전 세계)&#x27;. 하단에 &#x27;웹진 서술 기준, 원 보고서 미확인, 조사 주체 표기가 자료마다 다름&#x27; 표기" loading="lazy"></figure>
+<p>위 카드의 수치는 모두 웹진과 WHO 자료가 적은 그대로다. 외부적 고립 9.5%는 관계망 부족을 가리키며, 웹진 표기상 문항은 “어려운 상황에서 외면하지 않는 사람이 없다”이다. 스스로 고립되었다고 인지하는 내부적 고립은 13.9%, ‘항상’ 고립은 1.4%다.</p>
+<p>국제 수치도 있다. WHO 사회적 연결 위원회 보고서(2025년 6월 30일)는 청소년과 청년이 외로움 비율이 가장 높고 나이가 오를수록 대체로 낮아진다고 설명한다. 청소년 비율은 21%다. 연령 구간별 세부 수치는 직접 확인하지 못했다.</p>
+<p>외로움은 어디서 오는 걸까? 웹진이 꼽은 영향 요인은 아동기의 부정적 생애경험, 과도한 학업 스트레스와 경쟁, 비대면 관계의 증가와 공동체 변화, 도움을 요청했지만 적절한 지원으로 이어지지 못한 경험이다. 이 목록에는 학생 개인의 성격이 들어 있지 않다. 친구가 없다는 사실을 학생 본인의 결함으로 읽을 근거를 이 자료들에서 찾지 못했다.</p>
+<p>외로움이 학교생활에 어떤 영향을 주는지도 짚어 둔다. WHO는 연결감을 느끼는 학생의 학교 성적이 더 낫다고 서술한다. 아동정신건강 기관인 미국 Child Mind Institute는 사회적 어려움을 등교 거부의 유발 요인 중 하나로 설명한다. 외로움과 학업의 관계를 다룬 연구들이 더 있는 듯하나, 본문을 열람하지 못해 쓰지 않는다.</p>
+<p>한국청소년정책연구원은 2025년 4월 15일 「고립·은둔 청소년 삶 실태 및 정책 과제」를 발표했다. 이 글이 다루는 범위를 넘는 주제지만, 기초자료 구축과 지원 인프라, 법률·조례 제정을 정책제언으로 담았다는 점만 적어 둔다.</p>
+<hr>
+<h2>따돌림과 외로움은 어떻게 다를까?</h2>
+<p>둘은 같은 말이 아니다. 친구가 없을 때의 외로움은 감정 상태이고, 따돌림은 법에 정의된 학교폭력의 한 유형이다. 학생과 곁의 어른 모두에게 해당하는 구분이다.</p>
+<p>법제처 생활법령정보에 따르면 학교폭력예방법상 학교폭력에는 따돌림이 포함된다. 둘 이상의 학생이 특정 학생을 지속적이고 반복적으로 신체적·심리적으로 공격해 고통을 주는 행위가 그 내용이다. 외로움은 이 법의 범주에 들지 않는다.</p>
+<p>소스가 보여주는 구분의 틀은 이렇다. 하나는 친구가 없거나 외로운 상태다. 다른 하나는 가해 행위가 있는 따돌림이다. 접근도 다르다.</p>
+<figure><img src="output/학교-친구없을때-정서-극복/images/body-3.png" alt="구분 다이어그램. 위쪽에 &#x27;친구가 없거나 외로운 상태&#x27;(외로움=주관적 감정, 사회적 고립=객관적 상태), 아래쪽에 &#x27;가해 행위가 있는 따돌림&#x27;(학교폭력의 한 유형, 둘 이상 학생의 지속적·반복적 공격). 각 상자 옆에 소스가 말하는 접근 표기(외로움·고립: 부모 교육·상담, 지속적 지원 연계, 지지망 구축 / 따돌림: 교육부 5차 기본계획 등 별도 체계). 가운데 점선 라벨 &#x27;외로움이 따돌림 피해에서 비롯되었는지 판별하는 방법은 소스에서 확인하지 못함&#x27;" loading="lazy"></figure>
+<p>위 도식에서 눈여겨볼 곳은 가운데 점선이다. 외로움이 따돌림 피해에서 비롯되었는지 가려내는 방법을 이 글의 소스에서는 확인하지 못했다. 그래서 스스로 판단하기 어려울 때를 위한 길을 따로 안내한다.</p>
+<p>따돌림에는 별도의 대응 체계가 있다. 교육부는 2025년 5월 1일 제5차 학교폭력 예방 및 대책 기본계획(2025~2029)을 발표했다. 학교·교원·학부모의 예방 역량 강화, 관계 회복과 정서·사회성 발달 중심의 예방, 가해학생 조치 개편, 학생 위기상담 강화가 들어 있다. 학교폭력 법령 관련 안내는 국민신문고(epeople.go.kr) 같은 정부 창구로 이어진다고 생활법령정보는 안내한다.</p>
+<p>두 가지를 가르는 일이 어렵더라도 길은 막히지 않는다. 위(Wee) 클래스 대상 안내에는 학교폭력, 따돌림, 대인관계 미숙이 함께 들어 있고, 청소년상담 1388의 상담 주제에도 친구 문제와 학교폭력이 나란히 있다. 어느 쪽인지 몰라도 문을 두드릴 수 있다는 뜻이다.</p>
+<hr>
+<h2>친구가 없을 때 학생, 부모, 교사는 무엇을 할 수 있을까?</h2>
+<p>자료가 말하는 방법은 있다. 그러나 어느 것도 ‘이렇게 하면 해결된다’는 약속이 아니다. 근거의 성격이 모두 다르기 때문이다.</p>
+<p>방법을 고르려면 근거의 성격을 알아야 한다. 그러려면 어디서 나온 말인지 가려야 한다. 그래서 방법마다 출처의 성격, 곧 연구인지 기관 권고인지 정책 제언인지를 붙인다.</p>
+<figure><img src="output/학교-친구없을때-정서-극복/images/body-4.png" alt="대상별 방법과 근거 성격 표. 열은 &#x27;대상 / 방법 / 근거 소스의 성격&#x27;. 학생 - 혼자 있는 시간에 무언가를 하는 쪽이 적응에 나았다는 연구 결과(학술 리뷰 2023), 사회기술훈련·인지행동치료 등 접근의 존재(WHO), 학교 상담·1388 이용(공공기관 안내). 부모 - 관심사에 관심과 인정, 가족 루틴, 공감·타협 모델링(미국 시애틀 아동병원 안내, 2025-11-24), 등교 회피 시 비난 없이 듣기(Child Mind Institute, 2025-02-04), 부모 교육·상담 강화(한국 정책 제언). 교사·학교 - 위 클래스·센터·스쿨(교육부), 사회정서학습 PATHS(RCT 2021), 학교 기반 개입 메타분석(프리프린트 2026)" loading="lazy"></figure>
+<p>위 표는 이 대목 전체의 지도다. 아래에서 대상별로 하나씩 풀어 쓴다.</p>
+<h3>학생에게</h3>
+<p>여기서는 학생인 그대에게 말한다. 친구가 없을 때 쓸 수 있는 방법부터 찾고 싶었을 것이다. 먼저 솔직히 밝힌다. ‘이렇게 하면 친구가 생긴다’는 구체적 요령은 공공기관과 학회 소스에서 확인하지 못했다. 그래서 만들어 쓰지 않는다.</p>
+<p>확인된 것은 몇 가지다. 청소년기의 혼자 있음을 다룬 학술 리뷰에서는 혼자 있는 시간에 무언가를 하는 쪽이 아무것도 하지 않는 쪽보다 적응에 나았다. 그리고 혼자 있는 이유가 중요했다. 이것은 연구가 본 경향이지 그대를 판정하는 기준이 아니다.</p>
+<p>WHO는 개인과 관계 수준의 전략으로 사회기술훈련과 인지행동치료 같은 접근을 분류한다. 관계를 맺고 유지하는 능력을 기르는 접근이라는 설명이다. 이름만 소개하는 것이며, 어느 것이 그대에게 맞는지는 이 글이 판단할 수 없다.</p>
+<p>혼자 감당하기 어려우면 학교의 위(Wee) 클래스에서 전문상담교사에게 신청하거나 청소년상담 1388을 이용할 수 있다. 이 창구들은 마지막 소제목에서 따로 정리한다. 이 대목에서 공공기관이 직접 안내하는 것은 이 창구들이다.</p>
+<h3>부모에게</h3>
+<p>이 대목은 부모 분들에게 하는 말이다. 근거는 미국 시애틀 아동병원의 보호자용 안내(2025년 11월 24일)다. 기관 권고이며 한국 기관의 안내가 아니다. 한국 공공기관의 부모용 구체 안내는 확인하지 못했다.</p>
+<p>이 안내는 자녀의 관심사와 취미에 관심과 인정을 보이라고 한다. 식사나 게임의 밤 같은 가족 루틴과 전통으로 소속감과 안정감을 만들라고도 한다. 부모가 공감과 타협, 감정 알아차리기를 직접 보여주고, 이야기나 영화로 긍정적인 사회적 상호작용을 강화하라는 권고도 있다.</p>
+<p>등교를 피하는 아이는 어떻게 대할까? Child Mind Institute의 글(임상 전문가 작성·검토, 2025년 2월 4일 갱신)은 비난 없이 듣고 원인을 파악하며 교사와 이야기하라고 한다. 장기 결석을 방치하지 않는 것도 중요하다고 한다. 결석이 길수록 복귀가 어렵기 때문이다.</p>
+<p>한국 자료에서는 부모 교육·상담 강화가 필요하다는 정책 방향이 나온다. 이것은 부모 개인의 요령이 아니라 정책 방향의 제언이다. 이 두 해외 소스는 한 가정의 사정을 모두 알고 쓴 글이 아니다. 참고로만 삼기를 권한다.</p>
+<p><span class="todo">TODO: 직접 경험 넣기 - 자녀·학생의 친구 문제를 곁에서 마주했던 경험이 있다면, 그때 한 일과 그 결과를 형용사 없이 사실로만</span></p>
+<h3>교사와 학교에</h3>
+<p>이 대목은 교사 분들과 학교에 하는 말이다. 교육부는 교내에 위(Wee) 클래스, 교육청 산하에 위 센터, 중·장기 치유가 필요한 학생을 위한 위 스쿨을 운영한다. 학교폭력 맥락의 계획에는 관계 회복과 정서·사회성 발달 중심의 예방, 학생 위기상담 강화가 들어 있다.</p>
+<p>한국 웹진은 도움을 요청한 학생이 지속적인 지원으로 이어져야 한다고 제언한다. WHO는 연결감 있는 학교 환경을 이야기한다. 어느 쪽이든 방향의 제시일 뿐, 교실에서 무엇을 어떻게 하라는 단계별 방법은 소스에 없다. 그래서 만들어 쓰지 않았다.</p>
+<h3>학교 프로그램은 효과가 있을까?</h3>
+<p>효과를 보고한 연구가 있다. 다만 한계도 함께 보아야 한다. 학교 기반 외로움 개입을 모은 메타분석(meta-analysis)이 대표적이다.</p>
+<p>이 연구는 의학 논문 사전공개 서버 medRxiv에 2026년 4월 16일 올라온 프리프린트(preprint)다. 동료심사를 거치지 않았다는 뜻이다. 1993~2025년 발표된 38편, 참가자 16,698명을 모았고 무작위 대조 19편, 비무작위 10편, 단일군 9편이 포함되었다.</p>
+<p>전체 합산 효과는 유의했다(g = -0.42, 95% 신뢰구간 -0.71~-0.13). 유형별로는 심리적 개입 g = -1.18, 사회정서기술훈련 g = -0.41, 또래 지원 g = -0.24였다. 사회적·정서적 지지는 효과가 미미하거나 중립이었다.</p>
+<p>같은 연구가 밝힌 한계도 크다. 연구 간 이질성(I²)이 86%로 높았고, 이상치를 빼도 62%였다. 예측구간은 -2.00~1.17로 0을 포함한다. 개별 개입이 모든 환경에서 효과를 낸다고 일반화하기 어렵다는 취지다. 시행 강도와 충실도 보고가 미흡했고, 63%가 ‘약한’ 질로 평가되었으며, 다수가 파일럿이었다.</p>
+<figure><img src="output/학교-친구없을때-정서-극복/images/body-5.png" alt="효과와 한계 대비 2단 카드. 왼쪽 &#x27;보고된 효과&#x27; - 전체 g = -0.42(95% CI -0.71~-0.13), 심리적 개입 g = -1.18, 사회정서기술훈련 g = -0.41, 또래 지원 g = -0.24, PATHS RCT 2년 후 외로움 유의하게 낮음. 오른쪽 &#x27;함께 밝힌 한계&#x27; - 이질성 I² 86%(이상치 제거 후 62%), 예측구간 -2.00~1.17(0 포함), 63% 약한 질, 다수 파일럿, 프리프린트(동료심사 전). 출처 medRxiv 2026-04-16, Frontiers in Education 2021-12" loading="lazy"></figure>
+<p>위 카드는 두 연구의 숫자를 좌우로 놓은 것이다. 한쪽만 읽으면 오해하기 쉬워서 나란히 두었다. 두 소스를 서로 판정하지 않고 함께 전한다.</p>
+<p>다른 하나는 영국 초등 1~2학년 대상 사회정서학습 교육과정 PATHS의 무작위 대조시험이다. 2021년 12월 Frontiers in Education에 발표되었고, 45개 학교 6~8세 5,218명이 참여했다. 2년 후 개입 학교의 아동이 ‘외롭지 않다’ 또는 ‘거의 외롭지 않다’고 답할 가능성이 유의하게 높았다.</p>
+<p>여기에도 한계가 있다. 실제 수업은 권장인 주 2회보다 적은 주 1회 정도였고, 분석은 준수 여부를 반영하지 않았다. 대상이 6~8세라서 이 연구만으로 더 높은 학령을 말할 수는 없다.</p>
+<hr>
+<h2>어디에 도움을 청할 수 있을까?</h2>
+<p>친구가 없을 때 기댈 수 있도록 소스가 안내하는 공공 창구가 있다. 청소년상담 1388, 위(Wee) 클래스와 센터, 정신건강 관련 상담전화가 그것이다. 따돌림이 의심될 때도, 그냥 마음이 무거울 때도 문을 두드릴 수 있다.</p>
+<figure><img src="output/학교-친구없을때-정서-극복/images/body-6.png" alt="공공 창구 안내 표. 열은 &#x27;창구 / 운영 주체 / 대상·내용 / 이용 방법&#x27;. 청소년상담 1388(여성가족부, 9~24세·학부모·보호자, 365일 24시간, 지역번호+1388·1388 문자·카카오톡 채널 등), 위 클래스(교육부, 학생이 전문상담교사에게 신청), 위 센터(교육부 산하 교육청, 문의 1588-2188 또는 02-721-0600), 위 스쿨(교육부, 학교·센터 통해 의뢰), 정신건강 위기상담전화(보건복지부, 1577-0199 또는 129). 하단에 &#x27;출처 대한민국 정책브리핑 2025-03-17, 정부24, 보건복지부&#x27;" loading="lazy"></figure>
+<p>위 표를 글로도 풀어 둔다. 청소년상담 1388은 여성가족부가 운영하며 9~24세 청소년과 학부모·보호자, 기관 담당자가 대상이다. 학업·진로, 친구 관계, 가족, 학교폭력, 성폭력, 가출 상담을 하고 365일 24시간 열려 있다. 위기 시에는 긴급 지원과 기관 연계가 있다.</p>
+<p>이용 방법은 지역번호와 1388로 전화하거나, 1388로 문자를 보내거나, 카카오톡 채널을 쓰는 것이다. 페이스북·인스타그램 메시지와 www.1388.go.kr도 안내된다. 지자체 센터의 한 예로 성남시청소년청년재단은 031-756-1388로 교우관계와 학업 고민을 무료로 받는다. 평일 9~18시는 본 센터가, 야간·주말·휴일은 경기도청소년상담복지센터가 응대한다고 안내한다.</p>
+<p>학교 안에는 위(Wee) 클래스가 있다. 학생이 담당 전문상담교사에게 신청한다. 위 센터는 학교나 학생이 유선으로 신청하며, 문의는 교육부 콜센터 1588-2188 또는 02-721-0600이다. 위 스쿨은 학교와 센터를 통해 의뢰한다. 위 클래스와 센터의 이용 비용은 본문에서 직접 확인하지 못했다.</p>
+<p>마음이 많이 힘들 때는 보건복지부의 정신건강 위기상담전화 1577-0199 또는 129(보건복지상담센터)가 있다. 자살 위기상담, 정신건강 상담, 정신건강 자원 정보 안내, 정신과 시설 연계를 맡는다. 거주지 시·군·구의 정신건강복지센터는 지역에 따라 아동·청소년 대상 서비스를 운영한다.</p>
+<p>전문가의 도움은 언제 청하면 좋을까? 한국 공공기관 소스에서 기간이나 기능 저하의 기준을 직접 제시한 문서는 확인하지 못했다. 한국에서는 위 창구의 상담이 출발점으로 안내되어 있다. 아래는 모두 미국 기관의 안내이며 한국의 기준이 아니다.</p>
+<figure><img src="output/학교-친구없을때-정서-극복/images/body-7.png" alt="인용 박스 2개. 상단 박스 - &#x27;아이가 매우 슬프거나 위축된 모습이 2주 이상 이어지면 의사에게 연락&#x27;(시애틀 아동병원, 2025-11-24). 하단 박스 - &#x27;등교 회피가 며칠, 몇 주, 몇 달 이어질 때, 따돌림·교사 문제 등 특정 문제가 원인일 때, 일부 시간만 등교할 때 전문적 개입이 필요&#x27;(Child Mind Institute, 2025-02-04). 하단 라벨 &#x27;미국 기관 안내, 한국 기준 아님, 진단 기준 아님&#x27;" loading="lazy"></figure>
+<p>위 박스는 두 기관이 적은 신호를 그대로 옮긴 것이다. 시애틀 아동병원 안내는 아이가 매우 슬프거나 위축된 모습이 2주 이상 이어지면 의사에게 연락하라고 하며, 우울일 수 있다는 설명을 붙인다. Child Mind Institute는 등교 회피가 이어지거나 따돌림 같은 특정 문제가 원인일 때 전문적 개입이 필요하다고 본다. 이 신호들은 진단 기준이 아니라 도움을 청할 때를 가늠하는 참고다. 진단과 치료는 이 글이 다루지 않는다.</p>
+<hr>
+<p>친구가 없을 때 학생에게 가장 먼저 필요한 것은 무엇일까? 새 친구일 수도 있고, 말을 건넬 수 있는 어른 한 사람일 수도 있다. 이 글의 자료는 그 답을 하나로 정해 주지 못한다. 친구가 없는 학생을 곁에서 지키는 일에는 정답표가 없다.</p>
+<p>내 정리가 전부는 아닐 것이다. 다른 자료와 다른 경험에서 더 나은 길을 찾은 분들도 있을 것이다. 그런 이야기를 나도 듣고 싶다. 다만 이 자료들이 공통으로 보여주는 것이 하나 있다. 문을 두드릴 창구가 이미 열려 있다는 사실이다.</p>
+<p>그대는 지금 누구에게 첫마디를 건넬 수 있겠는가?</p>
+<hr>
+<h2>참고 자료</h2>
+<ul class="refs"><li><a href="https://edpolicy.kedi.re.kr/edpolicy/webzine/42/841674" target="_blank" rel="noopener noreferrer">아동청소년 사회적 고립 현황 및 정책 방향</a> — 교육정책네트워크 정보센터(KEDI) 월간 교육정책포럼, 발행일 미확인</li>
+<li><a href="http://nsp.nanet.go.kr/plan/subject/detail.do?nationalPlanControlNo=PLAN0000054184" target="_blank" rel="noopener noreferrer">고립·은둔 청소년 삶 실태 및 정책 과제</a> — 한국청소년정책연구원(NYPi), 2025-04-15</li>
+<li><a href="https://www.who.int/news-room/questions-and-answers/item/social-connection" target="_blank" rel="noopener noreferrer">Social connection (Q&amp;A) / WHO Commission on Social Connection</a> — WHO, 2025-06-30</li>
+<li><a href="https://www.gov.kr/portal/service/serviceInfo/134200005007" target="_blank" rel="noopener noreferrer">위(Wee) 클래스 상담 지원</a> — 정부24(교육부 학생정서지원과), 발행일 미확인</li>
+<li><a href="https://www.korea.kr/news/policyNewsView.do?newsId=148940556" target="_blank" rel="noopener noreferrer">무엇이든 물어보세요 '청소년상담 1388'</a> — 대한민국 정책브리핑(여성가족부), 2025-03-17</li>
+<li><a href="https://www.mohw.go.kr/menu.es?mid=a10706040100" target="_blank" rel="noopener noreferrer">정신건강 복지센터 및 정신건강상담전화 운영</a> — 보건복지부, 발행일 미확인</li>
+<li><a href="https://www.moe.go.kr/boardCnts/viewRenew.do?boardID=294&amp;amp;boardSeq=103265&amp;amp;lev=0&amp;amp;searchType=null&amp;amp;statusYN=W&amp;amp;page=2&amp;amp;s=moe&amp;amp;m=020402&amp;amp;opType=N" target="_blank" rel="noopener noreferrer">제5차 학교폭력 예방 및 대책 기본계획(2025~2029) 발표</a> — 교육부, 2025-05-01</li>
+<li><a href="https://www.easylaw.go.kr/CSP/CnpClsMain.laf?csmSeq=1408&amp;amp;ccfNo=1&amp;amp;cciNo=1&amp;amp;cnpClsNo=1" target="_blank" rel="noopener noreferrer">학교폭력의 개념(학교폭력예방법)</a> — 찾기쉬운 생활법령정보(법제처), 발행일 미확인</li>
+<li><a href="https://www.medrxiv.org/content/10.64898/2026.04.15.26349177v1.full" target="_blank" rel="noopener noreferrer">Evaluating the impact of school-based interventions on youth loneliness: A systematic review and meta-analysis</a> — medRxiv 프리프린트(동료심사 전), 2026-04-16</li>
+<li><a href="https://www.frontiersin.org/journals/education/articles/10.3389/feduc.2021.791438/full" target="_blank" rel="noopener noreferrer">PATHS와 아동 외로움(영국 RCT)</a> — Frontiers in Education, 2021-12</li>
+<li><a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC10156970/" target="_blank" rel="noopener noreferrer">Are you alone? Measuring solitude in childhood, adolescence, and emerging adulthood</a> — Frontiers in Psychiatry, 2023-04-20</li>
+<li><a href="https://theconversation.com/how-high-quality-friendship-supports-teen-well-being-289265" target="_blank" rel="noopener noreferrer">How high-quality friendship supports teen well-being</a> — Ryan J. Persram(토론토 메트로폴리탄대), The Conversation, 2026-09</li>
+<li><a href="https://www.seattlechildrens.org/healthy-tides/help-child-feel-less-lonely/" target="_blank" rel="noopener noreferrer">3 Ways to Help Your Child or Teen Feel Less Lonely</a> — Seattle Children's, 2025-11-24</li>
+<li><a href="https://childmind.org/article/when-kids-refuse-to-go-to-school/" target="_blank" rel="noopener noreferrer">Recognize &amp; Address School Refusal in Children</a> — Child Mind Institute, 2025-02-04(갱신)</li>
+<li><a href="https://www.mogef.go.kr/nw/rpd/nw_rpd_s001d.do?mid=news405&amp;amp;bbtSn=710528" target="_blank" rel="noopener noreferrer">「2025 청소년 통계」 발표</a> — 여성가족부, 2025-05-27</li>
+<li><a href="https://www.snyouth.or.kr/fmcs/424" target="_blank" rel="noopener noreferrer">청소년전화 1388(상담지원)</a> — 성남시청소년청년재단 청소년상담복지센터, 발행일 미확인</li></ul>
+<hr>
+<p class="tags"><span>#친구가없을때</span><span>#학교외로움</span><span>#청소년외로움</span><span>#사회적고립</span><span>#학교폭력과외로움</span><span>#청소년상담1388</span><span>#위클래스</span><span>#학생정서지원</span><span>#또래관계</span></p>
+</article>
+    <article class="post" data-slug="성경-자녀-노엽게-하지-말라">
+<h1>자녀를 노엽게 하지 말라는 말의 뜻</h1>
+<p class="lead">2026년 5월 기준으로 확인한 자료로 쓴 글이다. 성경 본문과 고전 주석은 오래된 자료이며, 주석은 Bible Hub와 Precept Austin 같은 모음 사이트를 통해 읽었다.</p>
+<p>자녀를 노엽게 하지 말라. 에베소서와 골로새서에 나오는 이 한 줄을 읽고 나면 질문이 줄줄이 따라온다. 노엽게 한다는 것은 정확히 어떤 일일까? 아이가 화낼 일은 아예 하지 말라는 뜻일까? 그러면 야단은 어떻게 치란 말인가.</p>
+<p>나는 신학자가 아니라서 이 질문에 판결을 내릴 수 없다. 대신 번역본, 원어 사전, 고전 주석이 이 구절을 어떻게 설명하는지 나란히 놓아 보려 한다. 주석이 갈리는 곳에서는 갈린다고 쓰고, 어느 쪽이 옳은지는 가리지 않는다. 한국어 주석은 이번에 찾지 못했다는 점도 미리 밝혀 둔다.</p>
+<figure><img src="output/성경-자녀-노엽게-하지-말라/images/thumbnail.png" alt="인용 박스 카드 두 장. 위 카드에 &quot;에베소서 6:4 (개역개정) 너희 자녀를 노엽게 하지 말고 오직 주의 교훈과 훈계로 양육하라&quot;, 아래 카드에 &quot;골로새서 3:21 (개역개정) 너희 자녀를 노엽게 하지 말지니 낙심할까 함이라&quot;. 정중앙에 큰 글씨로 &quot;자녀를 노엽게 하지 말라&quot;, 1:1 비율" loading="lazy"></figure>
+<p>위 그림은 이 글이 다루는 두 구절이다. 같은 명령이 한 번은 긍정 명령과 함께, 한 번은 낙심이라는 이유와 함께 나온다. 이 둘을 차례로 풀어 보겠다.</p>
+<hr>
+<h2>두 본문은 어디에 놓여 있나?</h2>
+<p>두 본문 모두 자녀에게 순종을 말한 바로 뒤에, 아버지들에게 노엽게 하지 말라고 건네는 말이다. 순종을 요구받는 쪽이 아니라 권위를 가진 쪽을 향한 명령이라는 점이 먼저 눈에 들어온다.</p>
+<p>에베소서 6:1–3은 자녀에게 순종과 공경을 말하고 십계명의 제5계명을 인용한다. 그 직후 6:4에서 말의 방향이 아버지로 바뀐다. 개역개정은 “또 아비들아 너희 자녀를 노엽게 하지 말고 오직 주의 교훈과 훈계로 양육하라”고 옮긴다. 개역한글은 '교훈' 자리에 '교양'이라고 쓴다.</p>
+<figure><img src="output/성경-자녀-노엽게-하지-말라/images/body-1.png" alt="에베소서 6장 흐름 다이어그램. 왼쪽 상자 &quot;6:1–3 자녀에게: 순종과 공경(제5계명 인용)&quot;, 화살표, 오른쪽 상자 &quot;6:4 아버지에게: 노엽게 하지 말고 주의 교훈과 훈계로 양육&quot;. 아래에 작은 글씨로 &quot;골로새서 3:20 자녀에게 순종 → 3:21 아버지에게&quot;" loading="lazy"></figure>
+<p>그림처럼 골로새서 3:21도 3:20에서 자녀에게 순종을 말한 직후에 온다. 개역개정은 “아비들아 너희 자녀를 노엽게 하지 말지니 낙심할까 함이라”이다. 이 구절이 속한 3:18–4:1이 가정 규범이라는 설명은 일부 주석 요약에서만 확인했다. 에베소서 6장에 대해서는 Expositor's Bible이 제5계명을 로마의 효 개념과 견주며, 자녀의 순종이 가정 질서의 기초로 다뤄졌다고 설명한다.</p>
+<p>번역본 표현은 서로 다르다. 에베소서 6:4의 '노엽게'를 ESV·NIV·NASB는 provoke ... to anger로, KJV는 provoke to wrath로 옮겼다. NLT는 아이를 대하는 방식으로 화나게 한다는 설명을 덧붙인다. 골로새서 3:21은 NIV가 embitter, ESV와 KJV가 provoke, NASB가 exasperate, NLT가 aggravate다.</p>
+<p>한국어는 개역개정이 두 구절 모두 '노엽게'를 쓴다. 새번역 골로새서는 “격분하게 하지 마십시오”라고 쓰고, 낙심 부분은 “그들의 의기를 꺾지 않아야 합니다”로 풀어 쓴다. 어느 번역이 맞는지는 판정하지 않고 표현 차이만 적는다. ESV 골로새서 3:21의 정확한 본문은 ESV 사이트로 확인하지 못했다. Bible Hub 제목에서 so that they will not lose heart라는 표기를 본 것이 전부다.</p>
+<figure><img src="output/성경-자녀-노엽게-하지-말라/images/body-2.png" alt="번역본 비교 표. 행은 에베소서 6:4와 골로새서 3:21. 열은 ESV, KJV, NIV, NASB, NLT, 개역개정, 새번역. 칸에는 provoke ... to anger / provoke to wrath / embitter / exasperate / aggravate / 노엽게 / 격분하게 등 research에 있는 표현만 기입" loading="lazy"></figure>
+<p>표에서 보듯 '노엽게'라는 한국어 하나가 영어에서는 여러 단어로 흩어진다. 같은 뜻인데 번역이 달라졌는지, 원문 자체의 결이 달라서인지는 다음 장에서 원어를 보며 살펴본다.</p>
+<hr>
+<h2>'노엽게 하다'는 원어로 무슨 뜻인가?</h2>
+<p>에베소서와 골로새서는 한국어로는 같은 '노엽게'지만 서로 다른 헬라어 동사를 쓴다. 에베소서의 parorgizo는 '곁에서 화나게 하다, 격노하게 하다'라는 뜻이다. 골로새서의 erethizo는 '자극해 반응하게 하다'이며, 나쁜 뜻으로는 '짜증나게·분하게 하다'로 쓰인다.</p>
+<p>parorgizo부터 보자. 에베소서의 문장은 금지가 현재 시제로 쓰여서 '계속하는 것을 멈추라' 또는 '시작하지 말라'로 읽을 수 있다고 Precept Austin은 정리한다. 이 정리에 따르면 노엽게 하는 일의 문제는 순간의 폭발이 아니라 반복이다. 속에 맺힌 원망은 한 번에 생기는 게 아니라 되풀이되는 자극 속에서 쌓이는 것이다.</p>
+<p>erethizo는 풀이가 갈린다. Precept Austin이 인용한 BDAG 정의는 앞서 말한 '자극해 반응하게 하다'이고, 이 단어는 신약에서 골로새서 3:21과 고린도후서 9:2 두 곳에만 나온다. 고린도후서에서는 긍정적 뜻으로 쓰인다.</p>
+<p>Ellicott는 이 동사를 노여움이 아니라 '경쟁심을 일으키다'로 풀고, 끊임없고 쉼 없는 자극을 금한 것으로 읽는다. JFB는 '짜증나게 하지 말라'로, Cambridge Bible은 chafe, irritate로 옮긴다. Vincent는 이 단어가 고린도후서 9:2와 이 구절에만 나온다는 점에 주목한다.</p>
+<figure><img src="output/성경-자녀-노엽게-하지-말라/images/body-3.png" alt="원어 비교 카드 3칸. 첫 칸 &quot;parorgizo (에베소서 6:4): para(곁에서) + orgizo, 곁에서 화나게 하다, 격노하게 하다&quot;, 둘째 칸 &quot;erethizo (골로새서 3:21): 자극해 반응하게 하다, 나쁜 뜻으로는 짜증나게·분하게 하다, 신약에서 골 3:21과 고후 9:2에만 나옴&quot;, 셋째 칸 &quot;athymeo (골로새서 3:21 낙심): a(없음) + thumos(기운·열정)&quot;" loading="lazy"></figure>
+<p>카드의 둘째 칸에서 볼 수 있듯 이 두 읽기는 서로 다른 방향을 가리킨다. 한쪽은 밀어붙이는 자극을 말하고 다른 쪽은 마찰과 짜증을 말한다. 소스는 Ellicott의 설명이 고린도후서 9:2의 긍정적 용례와 어떻게 이어지는지 직접 풀어 주지 않았고, 두 읽기를 판정하지도 않는다. 이 글도 같은 자리에 선다.</p>
+<hr>
+<h2>노엽게 하면 자녀는 어떻게 되나?</h2>
+<p>골로새서는 노엽게 한 결과를 직접 적는다. 낙심이다. athymeo는 a(없음)와 thumos(기운·열정)가 합쳐진 말로, 의욕을 잃을 만큼 기가 꺾인 상태를 뜻한다고 Precept Austin은 정리한다.</p>
+<p>바람이 빠진 풍선을 떠올리면 이해가 쉽다. 모양은 그대로인데 힘이 없다. 다만 풍선은 다시 불면 되지만, 사람의 낙심이 그렇게 간단하다는 말은 아니다. 비유는 여기까지만 쓴다.</p>
+<p>주석가들은 이 낙심을 구체적으로 풀어 쓴다. Bengel은 낙심이 '청소년의 해악'이라고 했다. Barnes는 끊임없이 흠을 잡으면 자녀가 용기를 잃고, 부모를 기쁘게 할 수 없다고 여겨 절망한다고 쓴다. Gill은 자녀가 맥이 빠지고 무기력해지거나 부모의 사랑을 얻지 못한다고 생각해 지시와 훈계를 무시하고 완고하고 반항적이 될 수 있다고 설명한다.</p>
+<p>Eadie(Precept Austin 인용)는 짜증이 끊이지 않으면 자녀가 기쁘게 하려는 노력을 포기하고 기계적인 순종만 하게 될 수 있다고 했다. 자라는 어린 영혼에게는 부드럽고 조심스러운 대우가 필요하다고도 했다. Spurgeon은 자녀는 순종해야 하지만 아버지는 화나게 해서는 안 된다는 취지로 말한다. Peter Pett은 지나치게 많은 명령과 비판이 낙심, 반항, 마지못한 눈가림 순종으로 이어지고, 지침이 너무 적으면 의심과 불확실이 생긴다고 쓴다.</p>
+<p><span class="todo">TODO: 직접 경험 넣기 - 부모의 말이나 태도 때문에 기가 꺾였던 기억, 또는 자녀의 기운이 빠져 보였던 순간이 있다면 한두 문장</span></p>
+<p>그렇다면 무엇이 '노엽게 하는 행동'일까? 낙심하지 않게 하려면 무엇이 낙심시키는지부터 알아야 한다. 그러려면 주석가들이 든 항목을 보아야 한다. 자녀를 노엽게 하는 행동의 항목은 출처마다 다르다.</p>
+<figure><img src="output/성경-자녀-노엽게-하지-말라/images/body-4.png" alt="소스별 항목 정리 표. 열은 &quot;출처 / 언급된 행동·태도&quot;. 행: Ellicott - 독단적이고 공감 없는 통치 / Barnes - 부당한 명령, 불필요한 엄격함, 분노의 표출 / Meyer - 불의, 가혹함, 성급한 성격, 과도한 엄격함 / Precept Austin(에베소서 해설) - 지나친 엄격함·끊임없는 흠잡기, 편애·형제 비교, 일관성 없거나 비합리적인 요구, 방임과 지키지 않는 약속, 긍정 없는 지나친 비판, 분노 중의 가혹한 훈육, 비현실적 기대와 인정 보류 / Precept Austin(골로새서 해설) - 과잉보호, 편애, 자녀 가치 깎아내리기, 비현실적 기대, 애정 부족, 파괴적 비판, 지나친 훈육" loading="lazy"></figure>
+<p>표의 항목은 모두 노엽게 하는 행동에 대한 소스별 해설이다. 에베소서 쪽 Precept Austin의 목록은 근거가 된 주석가가 페이지에서 구분되지 않는다. 이 항목들을 어떻게 실천에 옮길지는 소스가 제시하지 않았고, 그래서 이 글도 다루지 않는다.</p>
+<hr>
+<h2>왜 하필 아버지들인가?</h2>
+<p>노엽게 하지 말라는 명령이 왜 아버지들에게 놓였는지, 답은 하나로 모이지 않는다. 소스 안에 서로 다른 설명이 함께 있다. 어느 것을 정답으로 고르지 않고 나란히 적는다.</p>
+<p>첫째는 가정의 머리라는 권위의 자리다. Gill은 아버지가 가정의 머리여서 너무 엄격해지기 쉽고 어머니는 너무 관대하기 쉽다고 본다. JFB는 아버지를 '가정 권위의 샘'이라 부르며 자녀 문제에서 어머니보다 격정에 빠지기 쉽다고 보고, Bengel은 아버지가 권한을 더 쉽게 남용한다고 본다. 이 셋은 Bible Hub에 인용된 풀이다.</p>
+<p>둘째는 두 부모를 모두 포함할 수 있다는 읽기다. Precept Austin은 헬라어 pateres(아버지들)가 두 부모를 모두 가리킬 수도 있다고 하면서, 바울이 아버지의 책임을 강조한다고 정리한다.</p>
+<p>셋째는 로마 사회의 배경이다. Precept Austin은 1세기 로마 제국에서 아버지가 가정에서 거의 마음대로 할 수 있었다고 소개한다. 그렇기에 복음이 아버지의 권위 행사를 사랑에 따르도록 바꾸는 것은 당시로서는 혁명적이었다는 해설이다.</p>
+<p>넷째는 가정 안의 대표 권위라는 설명이다. Bengel과 Cambridge Bible은 골로새서에서 아버지가 가정의 주된 부모 권위를 대표한다고 본다.</p>
+<figure><img src="output/성경-자녀-노엽게-하지-말라/images/body-5.png" alt="아버지 지목 이유 4갈래 다이어그램. 중앙에 &quot;왜 아버지들인가?&quot;, 사방으로 뻗은 4개 상자: &quot;머리·권위의 자리 (Gill, JFB, Bengel)&quot; / &quot;두 부모 모두 포함 가능 (Precept Austin: pateres)&quot; / &quot;1세기 로마 사회 배경 (Precept Austin)&quot; / &quot;가정의 대표 권위 (Bengel, Cambridge Bible)&quot;. 정답 표시 없이 동등한 크기로" loading="lazy"></figure>
+<p>이 네 가지는 하나가 다른 것을 지우는 관계가 아니라 소스 안에 함께 놓여 있는 설명이다. 소스는 이들 가운데 어느 것이 정답인지 가리지 않고, 이 글도 가리지 않는다.</p>
+<hr>
+<h2>훈육과는 어떤 관계인가?</h2>
+<p>확인한 소스 중에 노엽게 하지 말라를 훈육 자체의 금지로 읽는 곳은 없었다. 오히려 에베소서 6:4는 금지 바로 뒤에 긍정 명령을 붙인다. 그 명령의 첫 단어 paideia는 훈련과 교육을 뜻하며 징계적 교정까지 포함하고, 둘째 단어 nouthesia는 가벼운 책망, 경고, 권면을 뜻한다.</p>
+<p>주석 일부는 두 단어를 구분한다. Vincent는 '훈련'이 도덕적·영적 훈련에 기여하는 모든 수단을 포괄하고 '훈계'는 말로 하는 훈련이라고 본다. Expositor's Greek Testament는 행동과 훈련을 통한 양육과 말을 통한 양육으로 나눈다. Precept Austin은 두 용어 모두 '주의' 기준, 곧 그리스도의 권위 아래서 이뤄지는 훈련임을 강조한다.</p>
+<figure><img src="output/성경-자녀-노엽게-하지-말라/images/body-6.png" alt="긍정 명령 2칸 비교. 왼쪽 &quot;paideia(훈련·교육, 징계적 교정 포함) - 행동과 훈련을 통한 양육&quot;, 오른쪽 &quot;nouthesia(경고·권면, 말로 하는 훈계) - 말을 통한 양육&quot;. 아래 가로 띠에 &quot;둘 다 &#x27;주의&#x27; 기준, 그리스도의 권위 아래서&quot;" loading="lazy"></figure>
+<p>그림의 아랫줄이 소스들이 두 단어를 묶는 지점이다. 그렇다면 소스들이 노엽게 하는 일로 경계하는 것은 무엇일까? 확인한 범위에서는 훈육 그 자체라기보다 훈육이 이뤄지는 상태다.</p>
+<p>Barnes는 징벌이 부모의 감정이 아니라 원칙에서 나와야 한다고 쓴다. Precept Austin은 분노 중에 하는 가혹한 훈육을 자녀를 노엽게 하는 사례로 든다. Pett은 엄격함이 필요하고 때로는 체벌도 필요할 수 있다고 하면서, 그것이 보복적이거나 지나치거나 부모가 자제력을 잃은 상태에서 이뤄져서는 안 된다고 한다. 다른 소스가 같은 입장인지는 확인하지 못했다.</p>
+<p>Expositor's Bible은 가정의 통치가 “단호하면서도 친절해야” 한다고 쓴다. 거슬리게 하는 것도 피하고, 불쾌감을 아예 피하는 것도 아니어야 한다는 취지로 정리된다. Eadie, Spurgeon, Gill은 끊임없는 흠잡기와 과도한 엄격함을 문제로 삼을 뿐 훈육 방식을 논하지는 않았다.</p>
+<p>이 부분은 내가 확인한 범위가 좁다. 체벌의 허용과 금지를 직접 다룬 학술 주석은 읽지 못했다. 잠언의 '매' 구절과 이 명령의 관계를 다룬 해설도 확인하지 못했다. ESV 사이트의 에베소서 6:4 참조 목록에는 신명기 6:7과 잠언 22:6이 올라 있으나, 이는 번역본이 붙인 목록일 뿐 주석의 해설이 아니다. 신명기나 잠언과 이 명령을 구체적으로 이어서 풀어 쓴 주석은 찾지 못했다. 그래서 이 연결에 대해서는 아는 것처럼 쓰지 않는다.</p>
+<p><span class="todo">TODO: 직접 경험 넣기 - 이 구절을 어떤 자리에서 처음 들었는지, 또는 훈육과 노엽게 함의 경계를 두고 고민했던 경험이 있다면 한두 문장</span></p>
+<hr>
+<p>자녀를 노엽게 하지 말라는 말은 짧지만, 그 안에 담긴 설명은 길고 서로 갈린다. 동사가 둘이고, 번역이 여럿이고, 아버지를 지목한 이유도 여럿이다. 확인하지 못한 곳도 분명히 있다. 한국어 주석, 신명기와 잠언의 연결 해설, 체벌 논쟁을 직접 다룬 학술 주석이 그렇다.</p>
+<p>그렇다면 이 구절은 그대에게 어느 자리에서 읽히는가? 노엽게 하는 쪽의 자리일까, 낙심하는 쪽의 자리일까. 내 정리가 전부일 리는 없다. 같은 본문을 다른 길로 읽은 분이 있다면 그 길도 듣고 싶다.</p>
+<hr>
+<h2>참고 자료</h2>
+<ul>
+<li><a href="https://biblehub.com/commentaries/ephesians/6-4.htm" target="_blank" rel="noopener noreferrer">Ephesians 6:4 Commentaries</a> — Bible Hub, 발행일 미확인</li>
+<li><a href="https://biblehub.com/commentaries/colossians/3-21.htm" target="_blank" rel="noopener noreferrer">Colossians 3:21 Commentaries</a> — Bible Hub, 발행일 미확인</li>
+<li><a href="https://www.preceptaustin.org/ephesians_64" target="_blank" rel="noopener noreferrer">Ephesians 6:4 Commentary</a> — Precept Austin, 발행일 미확인</li>
+<li><a href="https://www.preceptaustin.org/colossians_320-25" target="_blank" rel="noopener noreferrer">Colossians 3:20-25 Commentary</a> — Precept Austin, 발행일 미확인</li>
+<li><a href="https://biblehub.com/ephesians/6-4.htm" target="_blank" rel="noopener noreferrer">Ephesians 6:4 (번역 비교, 교차 참조)</a> — Bible Hub, 발행일 미확인</li>
+<li><a href="https://biblehub.com/lexicon/ephesians/6-4.htm" target="_blank" rel="noopener noreferrer">Ephesians 6:4 Lexicon</a> — Bible Hub, 발행일 미확인</li>
+<li><a href="https://biblehub.com/colossians/3-21.htm" target="_blank" rel="noopener noreferrer">Colossians 3:21 (번역 비교, 어휘)</a> — Bible Hub, 발행일 미확인</li>
+<li><a href="https://www.esv.org/Ephesians+6:4/" target="_blank" rel="noopener noreferrer">Ephesians 6:4 (ESV)</a> — ESV.org (Crossway), 발행일 미확인</li>
+<li><a href="https://biblehub.com/commentaries/expositors/ephesians/6.htm" target="_blank" rel="noopener noreferrer">Ephesians 6 Expositor's Bible Commentary</a> — Bible Hub 수록, 발행일 미확인</li>
+<li><a href="https://www.biblestudytools.com/commentaries/gills-exposition-of-the-bible/colossians-3-21.html" target="_blank" rel="noopener noreferrer">Gill's Exposition of the Bible, Colossians 3:21</a> — Bible Study Tools 수록, 발행일 미확인</li>
+<li><a href="https://www.bibliaplus.org/en/commentaries/138/peter-petts-commentary-on-the-bible/colossians/3/21" target="_blank" rel="noopener noreferrer">Peter Pett's Commentary, Colossians 3:21</a> — BibliaPlus 수록, 발행일 미확인</li>
+<li><a href="https://www.bskorea.or.kr/bible/korbibReadpage.php?version=GAE&amp;book=col&amp;chap=3&amp;sec=21&amp;cVersion=SAENEW%5E&amp;fontSize=15px&amp;fontWeight=normal" target="_blank" rel="noopener noreferrer">골로새서 3:21 (개역개정, 새번역)</a> — 대한성서공회, 발행일 미확인</li>
+<li><a href="https://hangl.net/korkrv/5175" target="_blank" rel="noopener noreferrer">개역개정 에베소서 06장</a> — HANGL ELF, 발행일 미확인</li>
+<li><a href="https://www.bible.com/ko/bible/88/EPH.6.4.KRV" target="_blank" rel="noopener noreferrer">에베소서 6:4 (KRV, 개역한글)</a> — YouVersion(Bible.com), 발행일 미확인</li>
+</ul>
+<hr>
+<p class="tags"><span>#노엽게하지말라</span><span>#자녀양육</span><span>#에베소서6장4절</span><span>#골로새서3장21절</span><span>#성경속자녀양육</span><span>#성경주석</span><span>#낙심</span><span>#아버지들아</span><span>#가정규범</span></p>
+</article>
+    <article class="post" data-slug="성경-자녀양육">
+<h1>성경 자녀양육, 다섯 구절로 읽어본다</h1>
+<p class="lead">2026년 5월 기준으로 확인한 자료로 쓴 글이다. 성경 본문은 개역개정과 ESV만 확인했고, 주석은 대체로 17~19세기에 쓰인 고전 주석이 중심이다. 해석이 갈리는 곳은 양쪽을 함께 적었다.</p>
+<p>“성경은 자녀를 어떻게 키우라고 하나요?”</p>
+<p>이런 질문을 품고 이 글을 열었을 분들이 있을 것이다. 성경 자녀양육을 다룬 글은 많다. 그런데 구절마다 해석이 갈리는 곳이 있어서 한 문장으로 답하기가 어렵다.</p>
+<p>그래서 이 글은 답을 하나로 모으지 않는다. 에베소서 6:4, 골로새서 3:21, 신명기 6:4~7, 잠언 22:6, 잠언 13:24. 이 다섯 구절이 무엇을 말하는지, 자료마다 어떻게 읽는지를 출처와 함께 옮긴다. 어느 해석이 옳은지는 나도 판정하지 않는다.</p>
+<figure><img src="output/성경-자녀양육/images/thumbnail.png" alt="1:1 정사각형 카드 모음. 중앙에 &quot;성경 자녀양육 다섯 구절&quot; 제목, 그 아래 에베소서 6:4 · 골로새서 3:21 · 신명기 6:4~7 · 잠언 22:6 · 잠언 13:24 다섯 구절 이름만 담은 작은 카드 다섯 장" loading="lazy"></figure>
+<p>위 이미지는 이 글이 다루는 다섯 구절의 지도다. 아래에서 순서대로 하나씩 본다.</p>
+<hr>
+<h2>성경 자녀양육에서 ‘노엽게 하지 말라’는 말은?</h2>
+<p>에베소서 6:4는 자녀양육에 관해 아버지들에게 두 가지를 말한다. 자녀를 노엽게 하지 말라는 것, 그리고 주의 훈육과 가르침으로 양육하라는 것이다. 개역개정은 “또 아비들아 너희 자녀를 노엽게 하지 말고 오직 주의 교훈과 훈계로 양육하라”로 옮겼다.</p>
+<p>이 자녀양육 구절은 금지만 한 게 아니라 적극 명령을 함께 둔 것이다. 하지 말 것과 할 것이 한 문장 안에 들어 있다.</p>
+<p>문맥도 짚어 둘 만하다. 앞 문단인 6:1~3은 자녀가 주 안에서 부모에게 순종하라는 말이고, 6:2는 “아버지와 어머니를 공경하라”를 약속이 딸린 첫 계명으로 언급한다. 6:4가 이어서 아버지에게 말한다. 고전 주석들은 이 구절을 에베소서 5:22~6:3으로 이어지는 가정 안 관계 의무의 구조 속에 둔다.</p>
+<p>낱말은 어떻게 풀릴까? ‘노엽게 하다(parorgizo)’를 Ellicott는 독단적이고 동정심 없는 지배에서 생기는 격분으로 설명한다. Meyer는 부당함, 거침, 성급한 기질에서 오는 짜증이라고 한다. Expositor's Greek는 계획적으로 화나게 하는 강한 동사로 본다.</p>
+<p>‘훈육(paideia)’은 Vincent가 도덕적·영적 훈련에 기여하는 모든 수단을 아우르는 말로 본다. ‘가르침’은 Ellicott가 말로 ‘생각나게 하는’ 가르침으로 풀고, Pulpit은 훈육과 구별되는 가르침으로 본다.</p>
+<p>번역본도 다르다. ESV는 “discipline and instruction”으로, 개역개정은 “교훈과 훈계”로 옮겼다. 단어도 순서도 같지 않다.</p>
+<figure><img src="output/성경-자녀양육/images/body-1.png" alt="에베소서 6:4 번역·원어 비교 표. 열은 &quot;ESV 표현 / 개역개정 표현 / 주석의 풀이&quot;, 행은 &quot;노엽게 하다&quot;, &quot;훈육(교훈)&quot;, &quot;가르침(훈계)&quot;" loading="lazy"></figure>
+<p>표는 같은 구절이 번역과 주석에서 어떻게 달라지는지를 한눈에 모은 것이다. 이 표의 풀이는 모두 위에서 확인한 주석에서 온 것이다.</p>
+<p>그렇다면 왜 어머니가 아니라 ‘아버지들’일까? 주석은 두 갈래로 답한다. Alford, Barnes, Meyer, Cambridge는 아버지가 가정의 머리로서 권위와 자녀 훈련의 통치를 맡았기 때문이라고 본다. Bengel과 Jamieson-Fausset-Brown은 아버지가 어머니보다 격정에 더 쉽게 휩쓸리는 경향이 있기 때문이라고 본다.</p>
+<p>하나는 권위 구조를, 다른 하나는 성향을 이유로 든다. 어느 쪽이 맞는지는 이 자료들로 가를 수 없다.</p>
+<p><span class="todo">TODO: 직접 경험 넣기 - 어린 시절 부모에게, 또는 자녀를 대하면서 ‘노엽다’고 느꼈거나 느끼게 했던 순간과 그때의 마음</span></p>
+<hr>
+<h2>골로새서의 자녀양육 권면은 왜 ‘낙심’을 말할까?</h2>
+<p>골로새서 3:21(ESV)은 에베소서와 비슷한 자녀양육 권면에 이유를 붙인다. 노엽게 하지 말라는 금지 뒤에 낙심이 나온다.</p>
+<blockquote><p>“Fathers, do not provoke your children, lest they become discouraged.”</p></blockquote>
+<p>개역개정은 같은 구절을 “아비들아 너희 자녀를 노엽게 하지 말지니 낙심할까 함이라”로 옮겼다. 에베소서 6:4에서는 ‘노엽게 하는 일’에 방점이 있다. 골로새서 3:21에서는 그 뒤에 올 결과로서의 의기소침이 명시된다.</p>
+<figure><img src="output/성경-자녀양육/images/body-2.png" alt="인용 박스. 위쪽에 골로새서 3:21 ESV 문장 한 줄, 아래쪽에 개역개정 &quot;낙심할까 함이라&quot; 한 줄을 나란히 놓은 두 단 인용 박스" loading="lazy"></figure>
+<p>박스에 담은 것은 같은 구절의 두 번역이다. 영어의 ‘discouraged’가 한국어 개역개정에서는 ‘낙심’이 된다.</p>
+<p>문맥은 이렇다. 앞의 3:18~20은 아내, 남편, 자녀에게 주는 권면이고, 3:20은 자녀가 부모에게 순종하라는 말이다. 3:21이 아버지들에게 말한다. Cambridge는 아버지를 부모 권위의 ‘자연스러운 대표’로 보되 양 부모를 포함할 수 있다고 한다.</p>
+<p>‘낙심(athymeo)’은 주석가마다 결이 조금씩 다르게 풀린다. Bengel은 꺾인 정신, 젊음의 해악이라고 한다. Barnes는 기쁘게 해드릴 수 있다는 소망을 잃고 용기를 잃는 것이라고 한다. Gill은 슬픔으로 정신이 꺾여 무기력해지는 것이라고 한다.</p>
+<p>Pulpit은 한 걸음 더 나아간 함의를 짚는다. 부모의 권위를 잘못 쓰면 자녀가 아버지를 친구가 아닌 적으로 보게 될 수 있다는 것이다.</p>
+<p>‘노엽게 하다’의 원어는 에베소서와 다르다. 여기서는 erethizo가 쓰였다. Cambridge는 ‘자극해 짜증나게 하다’로 풀고, Vincent는 고린도후서 9:2에서 이 낱말이 선행을 북돋운다는 뜻으로 쓰였으니 문맥이 중요하다고 한다.</p>
+<p>Ellicott는 문맥에 따라 ‘경쟁심을 일으키다’로 읽힐 수 있는 쪽으로 서술하는 한편, 끊임없는 불안한 자극을 금한다는 데까지 말한다. 그 이상의 해석은 확인하지 못했다. Cambridge와 Pulpit은 짜증이나 분노를 일으키는 것으로 설명한다.</p>
+<hr>
+<h2>신명기 6:4~7의 자녀양육은 무엇을 가르치라 할까?</h2>
+<p>신명기 6:4~7은 말씀을 부모 자신의 마음에 먼저 두고, 자녀에게 부지런히 가르치며, 일상 어디서나 이야기하라고 명령한다. 이 구절은 쉐마로 불리는 6:4~9 안에 들어 있다.</p>
+<p>개역개정 6:7은 “네 자녀에게 부지런히 가르치며”로 시작해 집에 앉았을 때, 길을 갈 때, 누워 있을 때, 일어날 때에 이 말씀을 강론하라고 잇는다. 네 가지 상황이 하루를 한 바퀴 돈다.</p>
+<p>본문의 순서가 중요하다. 6:4~5의 쉐마는 하나님이 한 분이시며 마음·영혼·힘을 다해 사랑하라는 취지다(ESV). 이어서 6:6이 그 말씀을 먼저 부모 자신의 마음에 있게 하라고 한다. 자녀양육의 구체적 명령은 6:7에서 나온다.</p>
+<p>자녀에게 가르치려면 말씀이 부모 마음에 있어야 한다. 그러려면 6:4~5의 고백이 앞에 서야 한다. 본문이 그 순서를 그렇게 놓았다.</p>
+<p>‘가르치다(shanan)’는 어떤 낱말일까? Poole은 ‘갈다, 날카롭게 하다’라는 뜻이라서 마음속 깊이 꿰뚫게 하라는 뜻으로 풀었다. Gill은 반복과 계속적인 주입으로 보았고, Cambridge는 날카롭게 하여 자녀에게 새기는 것으로 풀었다.</p>
+<p>칼을 숫돌에 가는 일을 떠올리면 쉽다. 한 번 문지르고 마는 게 아니라 여러 번 반복해서 날을 세운다. 다만 비유는 여기까지다. 아이는 칼이 아니다.</p>
+<figure><img src="output/성경-자녀양육/images/body-3.png" alt="신명기 6:7 네 가지 상황 다이어그램. 가운데에 &quot;말씀을 자녀에게 부지런히 가르치라&quot;, 네 방향에 &quot;집에 앉을 때 · 길 갈 때 · 누울 때 · 일어날 때&quot;를 화살표로 둥글게 이은 순환 다이어그램" loading="lazy"></figure>
+<p>다이어그램의 네 방향은 본문의 네 상황이다. 주석에서 확인되는 것은 이 네 상황을 하루 전체로 읽는다는 점이다. Benson은 네 상황을 하루 전체로 풀었고, Matthew Henry는 모든 기회에 신적인 일을 대화하라고, Gill은 모든 기회에 하나님에 대한 지식을 심으라고 읽었다.</p>
+<p>누가 가르치고 누구에게 가르치는지도 주석마다 범위가 다르다. Barnes는 부모를 가정 안의 교육자로 본다. Ellicott는 부모가 자녀가 물을 만한 질문에 즉시 답할 수 있어야 한다고 본다. Benson은 가르침이 자녀뿐 아니라 종, 친구, 동료에게까지 미친다고 본다.</p>
+<p>Jamieson-Fausset-Brown은 이 체계가 종교를 가정생활의 모든 친숙한 것과 연결하도록 짜인 것이라고 보았다. Keil &amp; Delitzsch는 계명이 늘 생각과 대화의 주제가 되어야 한다고 보았다.</p>
+<p><span class="todo">TODO: 직접 경험 넣기 - 집에서 신앙이나 말씀을 일상 대화로 나눈 경험, 혹은 그러지 못해 아쉬웠던 경험</span></p>
+<hr>
+<h2>잠언 22:6 자녀양육의 ‘마땅히 행할 길’이란?</h2>
+<p>잠언 22:6은 아이에게 ‘마땅히 행할 길’을 가르치면 늙어도 그것을 떠나지 않는다고 말한다. 개역개정은 “마땅히 행할 길을 아이에게 가르치라 그리하면 늙어도 그것을 떠나지 아니하리라”로 옮겼다. ESV는 “Train up a child in the way he should go”로 시작한다.</p>
+<p>문제는 ‘마땅히 행할 길’이 무엇이냐는 것이다. 자료에는 서로 다른 읽기가 있다. 어느 것도 이 글이 고르지 않는다.</p>
+<p>도덕적이고 올바른 길로 읽는 견해가 있다. Matthew Henry Concise, Gill, Benson이 이쪽이다. Gill은 순종과 종교의 길로, Benson은 네가 아이가 택하기를 바라는 삶의 길로 풀었다. Hildebrandt는 McKane를 이 견해의 대표로 소개한다.</p>
+<p>아이의 기질과 성향에 맞추는 읽기도 있다. Barnes는 각 아이의 기질을 연구하라고 보고, Pulpit은 아이의 본성·능력·기질을 고려한다고 본다. Cambridge는 개별 성격과 능력을, Keil &amp; Delitzsch는 삶의 단계에 따른 규율을 말한다.</p>
+<figure><img src="output/성경-자녀양육/images/body-4.png" alt="잠언 22:6 해석 비교 표. 열은 &quot;견해 / 내용 / 소개한 소스&quot;, 행은 &quot;도덕적·올바른 길&quot;, &quot;아이의 기질·성향에 맞춤&quot;, &quot;호크마 주석(한국어)&quot;, &quot;반전 읽기(소수)&quot;, &quot;직업·적성 관련 읽기&quot;" loading="lazy"></figure>
+<p>표는 자료에서 갈리는 다섯 가지 읽기를 소스와 함께 정리한 것이다.</p>
+<p>호크마 주석(한국어)은 두 가지를 함께 취한다. ‘그의 길을 따라’가 원문의 문자적 뜻이라서 아이의 자질·성격·능력·잠재력·본성·기질을 고려해야 한다고 풀었다. 동시에 어려서부터 아이가 하나님께 헌신하는 삶을 살도록 훈련하라는 규범적 교훈으로 정리했다.</p>
+<p>가장 눈에 띄는 것은 Hildebrandt가 소개하는 소수의 읽기다. 그는 히브리어 본문에 영어 ‘should(마땅히)’에 해당하는 낱말이 없고 ‘그의 길’이라고만 되어 있다고 소개한다(Douglas Stuart의 지적으로). Clifford, Stuart, Aiken의 읽기는 이 구절을 경고로 본다. 아이를 ‘자기 길’대로 내버려두면 늙어서도 거기서 벗어나지 못한다는 뜻이라는 것이다.</p>
+<p>이 읽기는 일반 해석을 뒤집는다고 소개되며, 의도적 모호성일 수 있다는 의문도 함께 제시된다. 한편 도덕적 읽기를 취하는 주석은 같은 ‘그 길’을 올바른 길로 본다. 도덕적 수식어가 없다는 점을 의문의 근거로 드는 쪽과, 그래도 올바른 길로 읽는 쪽이 자료에 함께 있다.</p>
+<p>이 구절은 자녀양육의 약속일까? 확인된 자료들은 같은 방향을 가리킨다. Poole은 보편적이고 필연적으로 참은 아니며 대체로 그렇다는 뜻이라고 했다. Gill은 어린 시절의 인상은 쉽게 지워지지 않고 사람은 보통 선한 길을 버리지 않는다는 뜻으로 설명했다.</p>
+<p>호크마 주석은 절대적 약속이 아니라 교육의 원리, 곧 조건부 원리로 정리했다. Hildebrandt는 ‘잠언은 약속이 아니다’를 반복해서 강조하며, 약속으로 읽으면 자녀가 잘못되었을 때 부모를 자책으로 몰아넣는다고 짚는다. 반대로 이 구절이 부모에게 희망과 격려가 되어 왔다는 사용의 역사도 그는 언급한다.</p>
+<p>이 구절을 절대적 약속으로 읽어야 한다는 주장은 확인한 자료에서 찾지 못했다. 참고로 Hildebrandt 자료는 영상 강의를 옮긴 한국어 전사본이라서 번역 투가 거칠고 일부 문장이 어색한데, 의미를 알 수 있는 부분만 옮겼다.</p>
+<hr>
+<h2>잠언 13:24 자녀양육의 ‘매’는 무엇을 뜻할까?</h2>
+<p>잠언 13:24의 자녀양육 권면은 매를 아끼는 자는 자식을 미워하는 자이고, 자식을 사랑하는 자는 근실히 징계한다고 말한다. ‘매’를 어떻게 읽을지는 자료마다 갈린다. 이 절은 확인된 자료가 말한 바만 옮기고, 이 글은 체벌을 권하지도 금하지도 않는다.</p>
+<p>세 가지 번역을 놓고 보자. 개역개정은 “매를 아끼는 자는 그의 자식을 미워함이라 자식을 사랑하는 자는 근실히 징계하느니라”로 옮겼다. 한국천주교주교회의 주석성경은 “매를 아끼는 이는 자식을 미워하는 자, 자식을 사랑하는 이는 벌로 다스린다”로 옮겼다. ESV는 “Whoever spares the rod hates his son, but he who loves him is diligent to discipline him”이다.</p>
+<figure><img src="output/성경-자녀양육/images/body-5.png" alt="잠언 13:24 번역 비교 카드. 카드 세 장에 각각 &quot;개역개정&quot;, &quot;한국천주교주교회의 주석성경&quot;, &quot;ESV&quot;를 제목으로 하고 해당 번역 문장을 한 장에 하나씩 담음" loading="lazy"></figure>
+<p>세 카드는 같은 구절의 번역 차이만 보여준다. 새번역이나 공동번역 같은 다른 한국어 번역본은 확인하지 못했다.</p>
+<p>문맥을 보면, 앞뒤 구절(13:23, 13:25)은 가난한 자의 밭, 의인의 식사 등 다른 주제다. 13:24는 부모의 징계를 사랑의 표현으로 다루며 방임과 대비하는 격언이다. 아버지에게 하는 말로 풀이되지만, Wegner는 잠언 29:15를 설명하며 이 책임이 어머니만의 것은 아니라고 본다.</p>
+<p>원어는 어떨까? ‘매(shebet)’를 BDB와 KB3는 막대, 지팡이, 몽둥이, 홀로 풀이한다. NIDOTTE(Fouts)는 시문학에서 가장 흔한 쓰임이 권위자가 쓰는 징계의 막대라고 설명한다. 아버지의 교정 징계(잠언 13:24; 22:15; 23:13, 14; 29:15), 관원의 처벌(10:13), 하나님(욥기 21:9; 37:13)의 경우가 그렇다.</p>
+<p>같은 사전은 출애굽기 21:20, 미가 4:14, 이사야 10:15 등에서 이 낱말이 때리는 데 쓰였고, 비유적으로 이스라엘에 대한 하나님의 징계에도 쓰인다고 한다. ‘근실히’에 해당하는 낱말은 간절히, 일찍, 부지런히 구한다는 뜻이다. 호크마 주석은 어릴 때부터 때를 맞춰 징계한다는 뜻으로 풀었고, Geneva Bible은 ‘betimes’를 ‘diligently’로도 옮길 수 있다고 한다.</p>
+<p>고전 주석은 이렇게 나뉜다. Benson은 마땅한 징계를 하지 않는 것이며 맹목적 애정은 미움만큼 해롭다고 했다. Matthew Henry Concise는 죄악된 습관을 허용하는 거짓된 방임을 표현한다고 설명했다.</p>
+<p>Jamieson-Fausset-Brown은 징계, 곧 실제 도구를 암시한다고 보았다. Poole은 애정이 있어도 결과는 미움과 같다고 했고, Gill은 어리석은 사랑이 실제 미움보다 나쁘다고 했다. Keil &amp; Delitzsch는 처벌 수단이자 아버지의 권위로 보았다.</p>
+<p>그렇다면 오늘의 연구자들은 어떻게 읽을까? 소스에서 확인되는 입장은 두 갈래다. 한쪽은 이 낱말을 때리는 도구와 연결해 읽는다. Wegner(Phoenix Seminary 구약 교수, JETS 2005)는 shebet가 때리는 도구로 쓰인 낱말이며 잠언의 매 구절이 일종의 체벌을 시사한다고 본다.</p>
+<p>같은 Wegner는 이 낱말이 단순한 엉덩이 때리기보다 넓은 징계를 가리키게 되었을 가능성도 말한다. 징계는 이전 단계가 먹히지 않을 때 쓰는 수준으로 보고, 분노나 악의로 쓰는 것은 해당하지 않는다고 본다. 교정이 말, 명령, 이성적 논증으로도 이루어진다는 취지의 주석도 그는 소개한다. 호크마 주석 역시 쉬브토를 징계를 위한 매, 막대기로 풀이한다.</p>
+<p>다른 쪽은 성경이 체벌을 요구하지는 않는다는 입장이다. Christianity Today의 2012년 1월 사설은 William J. Webb의 책 Corporal Punishment in the Bible을 인용해, 성경이 체벌을 ‘요구’하지는 않지만 금하지도 않는다는 논지를 소개한다. 같은 사설은 Albert Mohler가 체벌을 불순종과 처벌의 인과를 보여주는 것으로 옹호한다고도 소개하고, 잔인함과 분노 없이 마지막 수단으로 하라는 자체 권고를 낸다.</p>
+<p>두 입장은 자료 안에 함께 있다. 나는 어느 쪽도 판정하지 않는다.</p>
+<p>이 주제에는 성경 해석과 성격이 다른 현대 자료도 있다. 한국에서는 법무부가 2020년 8월 4일 민법 제915조의 징계권 조항을 삭제하는 개정안을 입법예고했다. 삭제 대상은 ‘필요한 징계’ 조항과 감화·교정기관 위탁 규정이다. 법무부는 이 조항이 부모 체벌을 정당화한다고 오해되는 것을 막기 위한 것이라고 밝혔다.</p>
+<p>리걸타임즈는 2021년 1월 8일 국회에서 이 개정안이 의결되었다고 보도했다. 시행일은 기사에서 확인하지 못했다.</p>
+<figure><img src="output/성경-자녀양육/images/body-6.png" alt="시간순 타임라인. 왼쪽부터 &quot;2006년 UN 아동권리위원회 일반논평 8호&quot;, &quot;2018년 미국소아과학회(AAP) 정책 성명&quot;, &quot;2020년 8월 4일 법무부 민법 제915조 징계권 삭제 입법예고&quot;, &quot;2021년 1월 8일 국회 의결&quot; 네 지점" loading="lazy"></figure>
+<p>타임라인은 이 글이 확인한 현대 자료의 순서다. 국제 문서에서 UN 아동권리위원회는 2006년 일반논평 8호에서 체벌을 ‘아무리 가볍더라도 어느 정도의 고통이나 불편을 주려는 의도로 물리력을 쓰는 모든 처벌’로 정의했다. 같은 문서는 ‘합리적·온건한’ 체벌이 아동의 최선의 이익에 부합한다는 주장을 받아들이지 않는다고 쓴다.</p>
+<p>미국소아과학회(AAP)는 2018년 정책 성명 “Effective Discipline to Raise Healthy Children”을 냈다. 이 성명에서 체벌이 효과가 없고 해롭다는 입장을 밝히고, 체벌 없이 긍정적 훈육 전략을 권했다. 이 내용은 HealthyChildren.org 기사로 확인했고, 정책 원문은 접근하지 못했다.</p>
+<p>기독교 안의 논의와 이 자료들은 서로 성격이 다른 소스다. 이 글은 둘 사이의 우열이나 일치 여부를 따지지 않는다.</p>
+<hr>
+<p>다섯 구절을 나란히 놓고 보니, 성경 자녀양육은 하나의 결론으로 묶이지 않는 곳이 여럿이었다. 아버지만 지목한 이유도, ‘마땅히 행할 길’도, ‘매’도 그렇다. 나는 그 갈림길에서 어느 쪽으로 가라고 말하지 않았다. 그럴 자격이 있는지 스스로도 확신하지 못한다.</p>
+<p>다만 갈림길이 어디에 있는지는 보여주었기를 바란다. 내가 확인하지 못한 자료나 다른 번역본을 읽는 분은 다른 결론에 닿을 수도 있다. 그 가능성은 누구에게나 열려 있다.</p>
+<p>그대가 성경 자녀양육의 다섯 구절을 다시 읽는다면 어느 구절에서 가장 오래 멈추게 될까?</p>
+<hr>
+<h2>참고 자료</h2>
+<ul class="refs"><li><a href="https://www.biblegateway.com/passage/?search=Ephesians+6%3A1-4&amp;version=ESV" target="_blank" rel="noopener noreferrer">Ephesians 6:1-4 (ESV)</a> — BibleGateway</li><li><a href="https://biblehub.com/esv/colossians/3.htm" target="_blank" rel="noopener noreferrer">Colossians 3 (ESV)</a> — BibleHub</li><li><a href="https://biblehub.com/esv/deuteronomy/6.htm" target="_blank" rel="noopener noreferrer">Deuteronomy 6 (ESV)</a> — BibleHub</li><li><a href="https://biblehub.com/esv/proverbs/22.htm" target="_blank" rel="noopener noreferrer">Proverbs 22 (ESV)</a> — BibleHub</li><li><a href="https://biblehub.com/esv/proverbs/13.htm" target="_blank" rel="noopener noreferrer">Proverbs 13 (ESV)</a> — BibleHub</li><li><a href="https://www.bskorea.or.kr/bible/korbibReadpage.php?version=GAE&amp;book=pro&amp;chap=13&amp;sec=24" target="_blank" rel="noopener noreferrer">개역개정 성경 본문</a> — 대한성서공회</li><li><a href="https://biblehub.com/commentaries/ephesians/6-4.htm" target="_blank" rel="noopener noreferrer">Ephesians 6:4 Commentaries</a> — BibleHub, 고전 주석 모음(연도 미확인)</li><li><a href="https://biblehub.com/commentaries/colossians/3-21.htm" target="_blank" rel="noopener noreferrer">Colossians 3:21 Commentaries</a> — BibleHub, 고전 주석 모음(연도 미확인)</li><li><a href="https://biblehub.com/commentaries/deuteronomy/6-7.htm" target="_blank" rel="noopener noreferrer">Deuteronomy 6:7 Commentaries</a> — BibleHub, 고전 주석 모음(연도 미확인)</li><li><a href="https://biblehub.com/commentaries/proverbs/22-6.htm" target="_blank" rel="noopener noreferrer">Proverbs 22:6 Commentaries</a> — BibleHub, 고전 주석 모음(연도 미확인)</li><li><a href="https://biblehub.com/commentaries/proverbs/13-24.htm" target="_blank" rel="noopener noreferrer">Proverbs 13:24 Commentaries</a> — BibleHub, 고전 주석 모음(연도 미확인)</li><li><a href="https://etsjets.org/wp-content/uploads/2010/06/files_JETS-PDFs_48_48-4_JETS_48-4_715-732.pdf" target="_blank" rel="noopener noreferrer">Discipline in the Book of Proverbs: "To Spank or Not to Spank?"</a> — Paul D. Wegner, Journal of the Evangelical Theological Society 48/4, 2005-12</li><li><a href="https://biblicalelearning.org/wp-content/uploads/2024/02/Hildebrandt_KO_Prov22_6_Korean.pdf" target="_blank" rel="noopener noreferrer">잠언 22:6 – 자녀를 훈련시키십시오</a> — Ted Hildebrandt, Biblical Elearning, 2024</li><li><a href="https://hangl.net/com_kor_hochma/140801" target="_blank" rel="noopener noreferrer">호크마 주석, 잠언 13장</a> — 호크마 주석과 강해</li><li><a href="https://hangl.net/com_kor_hochma/140819" target="_blank" rel="noopener noreferrer">호크마 주석, 잠언 22장</a> — 호크마 주석과 강해</li><li><a href="https://www.christianitytoday.com/2012/01/editorial-spanking-abuse/" target="_blank" rel="noopener noreferrer">Thou Shalt Not Abuse: Reconsidering Spanking</a> — Christianity Today, 2012-01</li><li><a href="https://bible.cbck.or.kr/Knbnotes/Bible/Prv/13" target="_blank" rel="noopener noreferrer">주석 성경 잠언 13장</a> — 한국천주교주교회의</li><li><a href="https://hrlibrary.umn.edu/crc/comment8.html" target="_blank" rel="noopener noreferrer">General Comment No. 8 (2006)</a> — UN 아동권리위원회, 2006</li><li><a href="https://www.healthychildren.org/English/news/Pages/AAP-Updates-Corporal-Punishment-Policy.aspx" target="_blank" rel="noopener noreferrer">AAP Updates Corporal Punishment Policy</a> — HealthyChildren.org, 2018-11</li><li><a href="https://www.korea.kr/news/policyNewsView.do?newsId=148875494" target="_blank" rel="noopener noreferrer">법무부, 부모 '징계권 조항' 삭제한 민법 개정안 입법예고</a> — 정책브리핑, 2020-08-05</li><li><a href="https://www.legaltimes.co.kr/news/articleView.html?idxno=57776" target="_blank" rel="noopener noreferrer">민법의 징계권 조항 삭제…체벌금지 명확화</a> — 리걸타임즈, 2021-01-09</li></ul>
+<hr>
+<p class="tags"><span>#성경자녀양육</span><span>#자녀양육</span><span>#에베소서</span><span>#골로새서</span><span>#신명기</span><span>#쉐마</span><span>#잠언</span><span>#성경해석</span></p>
+</article>
+    <article class="post" data-slug="성경-남편-아내-자녀의-도리">
+<h1>성경이 말하는 남편과 아내, 자녀의 도리</h1>
+<p class="lead">2026년 5월 기준으로 자료를 정리한 글이다. 성경 본문은 오래된 것이라 발행 연도가 따로 없다. 본문을 인용할 때는 개역개정과 ESV(영어 번역본)를 구분해 적었다.</p>
+<p>성경이 남편과 아내, 자녀에게 말하는 도리는 무엇일까? 이 질문을 검색창에 넣는 분들의 속마음은 대개 두 갈래일 것이다. 하나는 정확히 무엇이 적혀 있는지 알고 싶다는 마음이다. 다른 하나는 “아내에게 복종하라는 구절을 지금도 그대로 따라야 하는가?” 하는 걱정이다.</p>
+<p>나는 이 글에서 구절부터 차례로 읽으려 한다. 남편, 아내, 자녀, 부모에게 각각 무엇이 명령되어 있는지 확인하는 일이 먼저다. 그다음에 해석이 갈리는 대목을 양쪽 입장 그대로 옮긴다. 어느 쪽이 옳은지는 이 글이 판정하지 않는다. 나에게 그럴 자격이 없기 때문이다.</p>
+<p><span class="todo">TODO: 직접 경험 넣기 - 이 본문들을 처음 진지하게 읽게 된 계기나 가정에서 겪은 일, 있다면 2~3문장</span></p>
+<figure><img src="output/성경-남편-아내-자녀의-도리/images/thumbnail.png" alt="에베소서 5:21~6:4의 진행 순서를 아내, 남편, 자녀, 아버지 네 칸 카드로 나란히 놓은 1:1 다이어그램. 각 카드에 권면과 붙은 이유(주께 하듯 / 그리스도가 교회를 사랑하심 같이 / 주 안에서 옳으니라, 약속 있는 계명)를 짧게 적고, 가운데 제목 문구를 크게 둔다" loading="lazy"></figure>
+<p>에베소서 5:21부터 6:4까지는 아내, 남편, 자녀, 아버지 순서로 이어진다. 그림의 네 칸이 그 순서다. 각 권면마다 이유가 붙어 있다는 점을 눈여겨볼 만하다.</p>
+<hr>
+<h2>가정의 도리는 성경 어디에 나올까?</h2>
+<p>핵심 본문은 세 곳이다. 에베소서 5:21~6:4, 골로새서 3:18~21, 베드로전서 3:1~7이다. 세 본문 모두 아내와 남편에게 각각 권면한다. 자녀와 아버지에게까지 말하는 곳은 에베소서와 골로새서다.</p>
+<p>세 본문이 말하는 도리를 나란히 놓으면 대응 관계가 보인다.</p>
+<figure><img src="output/성경-남편-아내-자녀의-도리/images/body-1.png" alt="에베소서·골로새서·베드로전서 대응 비교표. 세로축은 아내·남편·자녀·아버지, 가로축은 세 본문. 아내: 에베소서 5:22~24, 33 복종·존경 / 골로새서 3:18 복종 / 베드로전서 3:1~6 순종(개역개정). 남편: 5:25~33 사랑 / 3:19 사랑, 모질게 대하지 말라 / 3:7 지식을 따라 동거, 귀히 여김. 자녀: 6:1~3 순종·공경 / 3:20 모든 일에 순종 / 확인하지 못함. 아버지: 6:4 노엽게 하지 말고 양육 / 3:21 낙심하지 않게 / 확인하지 못함" loading="lazy"></figure>
+<p>표에서 베드로전서의 자녀·아버지 칸이 비어 있는 것은 그 구절이 없어서가 아니다. 이번에 확인한 3:1~7 범위에서 자녀 관련 구절을 찾지 못했기 때문이다.</p>
+<p>이 권면들의 바탕에는 결혼에 대한 서술이 있다. 창세기 2:18~24는 사람이 혼자 있는 것이 좋지 않아 돕는 짝(ESV: helper fit for him)을 만든다고 적고, 둘이 한 몸이 된다고 말한다. 이 구절을 어떻게 해석하느냐는 이 글에서 다루지 않는다.</p>
+<hr>
+<h2>남편의 도리는 무엇일까?</h2>
+<p>남편의 도리로 공통되게 명령된 것은 사랑이다. 에베소서 5:25~27은 그리스도가 교회를 사랑하고 자신을 내어준 것 같이 아내를 사랑하라고 한다. 개역개정 5:28은 “자기 아내 사랑하기를 자기 자신과 같이 할지니”라고 적는다.</p>
+<p>골로새서 3:19는 사랑하되 모질게 대하지 말라고 한다. ESV로는 “do not be harsh with them”이다. 베드로전서 3:7은 “지식을 따라” 아내와 함께 살라고 한다. 아내를 귀히 여기라는 말도 붙는다. 그 이유로 기도가 막히지 않게 하려는 것이 언급된다.</p>
+<figure><img src="output/성경-남편-아내-자녀의-도리/images/body-2.png" alt="남편에게 주어진 명령 세 본문 인용 카드. 에베소서 5:28 개역개정 “자기 아내 사랑하기를 자기 자신과 같이 할지니” / 골로새서 3:19 ESV “Husbands, love your wives, and do not be harsh with them.” / 베드로전서 3:7 “지식을 따라” 동거, “생명의 은혜를 함께 이어받을 자”로 귀히 여김" loading="lazy"></figure>
+<p>베드로전서 3:7은 아내를 “더 연약한 그릇”이라고 부르는 동시에 “생명의 은혜를 함께 이어받을 자”라고 적는다. 그 두 표현을 어떻게 함께 읽는지는 내가 확인한 자료에서 다루지 않았다.</p>
+<p>남편의 도리인 이 사랑은 어떤 사랑일까? 한 개인 저자 주석(데이비드 구직)은 골로새서 3:19의 사랑을 희생적이고 자기를 부인하는 사랑으로 설명한다. 아내가 빌미를 주어도 쓰라림을 품지 말라는 뜻으로 읽는다. 옛 주석인 매튜 헨리는 그리스도의 사랑처럼 지속적이고 자기를 내어주는 사랑이라고 풀며 위로·보호·부양을 언급한다.</p>
+<p>에베소서에서 남편에게 준 지면은 눈에 띈다. 아내에게 준 말보다 5:25~33의 남편 사랑에 대한 서술이 훨씬 길다. 그래서 “남편에게 명령된 것이 더 무겁지 않은가?”라는 질문이 나오기도 한다. 본문이 명령한 내용을 나란히 놓을 수는 있다. 무게를 저울에 다는 일은 읽는 이에게 남겨 둔다.</p>
+<hr>
+<h2>아내의 도리는 무엇일까?</h2>
+<p>아내의 도리로 명령된 것은 복종(또는 순종)과 존경이다. 개역개정 에베소서 5:22~24는 아내가 자기 남편에게 “주께 하듯” 복종하라고 한다. 이유로는 남편이 아내의 머리 됨이 그리스도가 교회의 머리 됨과 같다는 점을 든다. 5:33에서는 아내가 남편을 존경하라고 말한다(ESV: respect).</p>
+<p>골로새서 3:18은 “주 안에서 합당하니라”로 끝난다. 구직은 이 말이 복종의 동기를 정하는 것이지 범위를 정하는 것은 아니라고 설명한다. 베드로전서 3:1~6은 아내에게 순종을 말하고, 외모의 단장보다 “마음에 숨은 사람”의 온유하고 안정한 심령이 하나님 앞에 값지다고 한다. 본보기로는 사라가 나온다.</p>
+<p>같은 ‘복종’이라 해도 번역어는 조금씩 다르다.</p>
+<figure><img src="output/성경-남편-아내-자녀의-도리/images/body-3.png" alt="아내 관련 구절의 번역어 비교표. 에베소서 5:22 개역개정 “복종” / ESV submit, 골로새서 3:18 개역개정 “복종” / ESV submit, 베드로전서 3:1 개역개정 “순종” / ESV be subject to. 아래에 에베소서 5:33 ESV respect(존경) 한 줄을 덧붙인다. 확인된 구절 기준이라는 각주 포함" loading="lazy"></figure>
+<p>개역개정은 에베소서와 골로새서에서 ‘복종’, 베드로전서에서 ‘순종’으로 옮긴다. ESV는 submit 또는 be subject to를 쓴다. 이 차이가 무엇을 뜻하는지는 뒤에서 다시 다룬다.</p>
+<p>지혜문학에도 아내에 대한 말이 있다. 잠언 31:10~12는 현숙한 아내를 귀하다고 하고, 남편이 그를 신뢰한다고 적는다. 반대로 잠언 21:9와 19:13은 다투는 아내를 지붕 모퉁이나 끊임없이 떨어지는 물방울에 견준다.</p>
+<hr>
+<h2>자녀와 부모의 도리는 무엇일까?</h2>
+<p>자녀의 도리는 부모에 대한 순종과 공경이다. 아버지의 도리는 자녀를 노엽게 하지 않고 양육하는 일이다. 에베소서 6:1~3(ESV)은 자녀가 “in the Lord” 부모에게 순종하라고 하며, 십계명 5계명인 출애굽기 20:12를 인용한다. 그 계명에는 잘되고 땅에서 장수한다는 약속이 붙는다.</p>
+<p>골로새서 3:20(ESV)은 모든 일에 부모에게 순종하라고 하고, 그것이 주를 기쁘시게 한다고 덧붙인다. 잠언 1:8은 아들에게 아버지의 훈계를 들으라고 한다. 구직은 이 순종이 저절로 생기지 않고 가르쳐야 한다고 설명한다. 성인이 된 자녀에게는 순종의 의무는 없어도 공경의 의무는 남는다고 본다. 이는 해석적 견해다.</p>
+<p>자녀의 도리에 관해 한 가지는 솔직히 밝혀야 한다. 자녀의 순종이 어디까지 미치는가는 이번에 확인한 자료에 없었다. 죄를 요구하는 명령을 받으면 어떻게 하느냐는 물음에 내가 답할 근거를 갖지 못했다. “주 안에서”와 “모든 일에”라는 두 표현이 어떻게 함께 읽히는지도 마찬가지다.</p>
+<figure><img src="output/성경-남편-아내-자녀의-도리/images/body-4.png" alt="자녀와 아버지의 도리 두 칸 카드. 왼쪽 자녀: 출애굽기 20:12 “Honor your father and your mother”, 에베소서 6:1~3 주 안에서 순종, 골로새서 3:20 모든 일에 순종. 오른쪽 아버지: 에베소서 6:4 노엽게 하지 말고 주의 훈계와 교훈으로 양육, 골로새서 3:21 낙심하지 않게. 가운데 “약속 있는 계명” 표시" loading="lazy"></figure>
+<p>아버지의 도리는 어떻게 적혀 있을까? 에베소서 6:4(ESV)는 자녀를 노엽게 하지 말고 “discipline and instruction of the Lord”로 기르라고 한다. 골로새서 3:21(ESV)은 자녀가 낙심하지 않도록 노엽게 하지 말라고 한다. 구직은 부권이 절대적이던 사회에서 “자녀의 감정이 고려되어야 한다”는 점이 새롭다고 본다. 자녀의 잘못된 행동이 부모 때문에 생길 수도 있다는 해설도 덧붙인다.</p>
+<p>부모의 도리인 양육의 바탕은 신명기 6:4~7에서 볼 수 있다. 말씀을 자녀에게 부지런히 가르치고, 일상 속에서 이야기하라는 것이다. 잠언 22:6은 마땅히 행할 길을 아이에게 가르치라고 한다. 잠언 13:24는 매를 아끼는 자는 아들을 미워하는 자라고 말한다. 이 구절의 ‘징계’를 오늘 어떻게 적용할지는 이번 조사에서 확인하지 못했다. 아는 척하지 않는 편이 낫다.</p>
+<p><span class="todo">TODO: 직접 경험 넣기 - 자녀를 기르거나 부모를 대하며 이 본문을 마주했던 경험, 있다면 2~3문장</span></p>
+<hr>
+<h2>복종이라는 도리는 왜 해석이 갈릴까?</h2>
+<p>쟁점은 크게 셋이다. 에베소서 5:21과 5:22의 관계, ‘머리’의 뜻, 그리고 복종·순종이라는 번역어와 그 한계다. 세 쟁점 모두 성경을 존중하는 사람들 사이에서 입장이 나뉜다. 여기서는 확인한 자료에 나온 주장을 그대로 옮긴다.</p>
+<p>먼저 5:21 “그리스도를 경외함으로 피차 복종하라”와 5:22의 관계다. 긴 편지에서 한 문장만 오려 내 읽으면 뜻이 달라질 수 있다. 그렇다면 5:22는 5:21과 함께 읽어야 할까? 양쪽이 모두 그렇게 말한다. 다만 함께 읽은 결과가 다르다. 물론 이 비유는 관계 자체가 쟁점이라는 사실을 가려 주지 못한다.</p>
+<figure><img src="output/성경-남편-아내-자녀의-도리/images/body-5.png" alt="에베소서 5:21과 5:22의 관계를 두 입장으로 나눈 비교표. 왼쪽 “상호복종을 강조하는 입장”: 키너(CBE 블로그, 2016-06-01) 5:21과 6:9가 틀을 이룸, 5:22에 동사가 없어 5:21의 동사가 이어짐, 아내의 복종은 상호복종의 한 예 / 코람데오닷컴 김민호(2021-05-26) 일방적 가부장적 순종이 아님. 오른쪽 “질서·역할상 복종을 유지하는 입장”: 보이스 해설(기독일보 2020-01-23) 5:21에 근거하되 아내의 복종은 자발적 수용 / 단버스 선언(CBMW, 1988) 남편의 리더십은 창조 질서의 일부. 아래 공통점 칸: 남편의 사랑 강조, 죄로 이끄는 권위를 따를 의무는 없음" loading="lazy"></figure>
+<p>표의 왼쪽 입장은 이렇다. 키너는 5:21과 6:9가 틀을 이루고, 그리스어 5:22에 동사가 없어 5:21의 동사가 이어진다고 본다. 그래서 아내의 복종은 상호복종의 한 예라는 것이다. 한국 목회자 기고(코람데오닷컴)도 남편과 아내가 그리스도를 중심으로 서로 복종하는 관계로 읽고, 일방적인 가부장적 순종은 아니라고 한다.</p>
+<p>오른쪽 입장은 다르다. 기독일보가 소개한 보이스의 해설은 복종이 5:21 “피차 복종”에 근거해야 한다고 하면서도, 아내의 복종은 자발적 수용에 기초하며 결혼하는 이는 남편의 머리됨에 동의한 것이라고 정리한다. 단버스 선언은 남편의 리더십이 타락 이전 창조 질서의 일부라고 한다. 동시에 남편은 harsh or selfish leadership을 버려야 하고, 아내는 “willing, joyful submission”으로 자라야 한다고 말한다. 두 입장은 서로 다른 자료에서 나왔고, 나는 그 사이에서 결론을 내리지 않는다.</p>
+<p>다음은 ‘머리’(그리스어 kephalē)의 뜻이다. 이 단어의 뜻이 권위인지 근원인지를 두고 학계 논쟁이 있다. 확인한 메타연구는 그루뎀을 ‘권위’ 뜻의 주요 옹호자로, 스크록스와 빌레지키언을 ‘근원’ 쪽으로 소개한다. 그루뎀 쪽은 권위라는 뜻이 이미 자리 잡은 의미라고 주장한다. Groothuis(Groothuis)도 ‘머리’가 권위가 아니라 기원 또는 생명의 근원을 가리킨다고 주장한다.</p>
+<figure><img src="output/성경-남편-아내-자녀의-도리/images/body-6.png" alt="‘머리’(kephalē) 뜻을 세 갈래로 보여주는 다이어그램. 왼쪽 “권위” - 그루뎀(1985·1990·2001), 가운데 “탁월함(preeminent)” - 티슬턴(2000, 증거가 shrinking이라고 정리), 오른쪽 “근원/생명의 근원” - 스크록스(1972), 빌레지키언(1985·1986), Groothuis. 하단에 “이 메타연구는 평등주의 단체 CBE가 낸 글” 유의 문구" loading="lazy"></figure>
+<p>세 갈래를 한 장에 그렸다. 메타연구는 티슬턴의 정리를 소개하며 양쪽 증거가 약해졌고 ‘탁월함’이 절충 뜻일 수 있다고 정리한다. 이 메타연구는 평등주의 단체 CBE가 낸 글이다. 그 점을 감안하고 읽어야 한다. 한국어 자료인 매튜 헨리 해설은 남편을 머리 자리에 있는 이로 보되, 그 복종은 사랑과 존경에서 나온 것이며 강압이 아니라고 설명한다.</p>
+<p>마지막은 번역어와 한계다. Groothuis은 아내에게 복종하라 했지 남편에게 ‘순종(obey)’하라고 하지는 않았다고 주장한다. 한편 개역개정 베드로전서 3장은 “순종하라”로 옮긴다. 번역어가 다르다는 사실만 기록해 둔다. 원어를 어떻게 읽어야 하는지는 나도 판정하지 않는다.</p>
+<p>한계에 대해서는 양쪽이 비슷한 말을 한다. 단버스 선언은 어떤 복종도 죄를 따르라는 뜻은 아니라고 밝힌다. 코람데오 기고는 아내의 순종이 그리스도 경외로 이어질 때 성립한다고 본다. 한편 구직은 남편의 장점 여부와 관계없이 아내의 복종이 그리스도인의 삶의 일부라고 본다. 세 문장의 강조점은 같지 않다.</p>
+<p>갈라디아서 3:28(ESV)은 “there is no male and female, for you are all one in Christ Jesus”라고 말한다. 이 구절과 가정 규범의 관계를 양쪽이 어떻게 해석하는지는 확인한 자료에서 직접 다뤄지지 않았다. 다만 단버스 선언은 남녀가 구원의 복을 동등하게 공유한다고 밝힌다.</p>
+<p>부부가 서로의 도리를 함께 말하는 본문도 있다. 고린도전서 7:3~5(ESV)에서 남편은 아내에게 부부 관계의 의무를 다한다. 아내는 자기 몸에 대한 권한이 없고 남편이 있다고 말한 뒤, 같은 논리가 남편에게도 적용된다. 이 본문은 서로 자기 몸에 대한 권한이 있다는 말이다. 합의하여 기도에 전념하는 한시적 예외도 언급된다.</p>
+<hr>
+<p>성경이 남편과 아내, 자녀에게 말하는 도리를 읽고 나면 남는 물음이 하나 있다. 그대는 이 구절들을 배우자에게 내밀 목록으로 읽고 있는가, 아니면 자기 몫으로 받을 명령으로 읽고 있는가?</p>
+<p>이 글은 어느 입장이 맞다고 알려 준 게 아니라, 각 입장이 무엇을 근거로 삼는지 보여 준 것이다. 그 정도가 내가 할 수 있는 몫이었다.</p>
+<p>내 정리에는 빠진 것이 있을 것이다. 본문은 일부만 요약 형태로 확인했고, 양쪽 원저작은 직접 읽지 못했다. 그러니 그대가 직접 본문을 펼치고, 양쪽 자료를 견주어 보기를 바란다. 남편과 아내, 자녀의 도리를 다시 묻는 자리가 그대의 가정에서 조금은 더 차분해지면 좋겠다.</p>
+<hr>
+<h2>참고 자료</h2>
+<ul class="refs">
+<li><a href="https://www.biblegateway.com/passage/?search=Ephesians+5%3A21-33%3B+Ephesians+6%3A1-4&amp;version=ESV" target="_blank" rel="noopener noreferrer">Ephesians 5:21-33; 6:1-4 (ESV)</a> — Bible Gateway</li>
+<li><a href="https://www.biblegateway.com/passage/?search=Colossians+3%3A18-21%3B+1+Peter+3%3A1-7&amp;version=ESV" target="_blank" rel="noopener noreferrer">Colossians 3:18-21; 1 Peter 3:1-7 (ESV)</a> — Bible Gateway</li>
+<li><a href="https://www.biblegateway.com/passage/?search=Genesis+2%3A18-24%3B+Exodus+20%3A12%3B+Proverbs+22%3A6%3B+Proverbs+31%3A10-12%3B+Deuteronomy+6%3A4-7&amp;version=ESV" target="_blank" rel="noopener noreferrer">Genesis 2:18-24; Exodus 20:12; Proverbs 22:6; 31:10-12; Deuteronomy 6:4-7 (ESV)</a> — Bible Gateway</li>
+<li><a href="https://www.biblegateway.com/passage/?search=1+Corinthians+7%3A3-5%3B+Proverbs+1%3A8%3B+Proverbs+13%3A24%3B+Proverbs+19%3A13%3B+Proverbs+21%3A9%3B+Galatians+3%3A28&amp;version=ESV" target="_blank" rel="noopener noreferrer">1 Cor 7:3-5; Prov 1:8; 13:24; 19:13; 21:9; Gal 3:28 (ESV)</a> — Bible Gateway</li>
+<li><a href="https://www.bskorea.or.kr/bible/korbibReadpage.php?version=GAE&amp;book=1pe&amp;chap=3" target="_blank" rel="noopener noreferrer">베드로전서 3장 (개역개정)</a> — 대한성서공회</li>
+<li><a href="https://www.bskorea.or.kr/bible/korbibReadpage.php?version=GAE&amp;book=eph&amp;chap=5" target="_blank" rel="noopener noreferrer">에베소서 5장 (개역개정)</a> — 대한성서공회</li>
+<li><a href="https://www.cbeinternational.org/blogs/case-mutual-submission-ephesians-5" target="_blank" rel="noopener noreferrer">The Case for Mutual Submission in Ephesians 5</a> — Craig Keener / CBE International, 2016-06-01</li>
+<li><a href="https://www.cbmw.org/about/danvers-statement/" target="_blank" rel="noopener noreferrer">The Danvers Statement</a> — CBMW, 1988-11 최종 발표</li>
+<li><a href="https://www.cbeinternational.org/resource/meta-study-debate-over-meaning-head-kephale-pauls-writings/" target="_blank" rel="noopener noreferrer">A Meta-Study of the Debate over the Meaning of "Head" (Kephalē) in Paul's Writings</a> — CBE International (Priscilla Papers), 발행일 미확인</li>
+<li><a href="https://www.cbeinternational.org/resource/biblical-submission-within-marriage/" target="_blank" rel="noopener noreferrer">Biblical Submission within Marriage</a> — Rebecca Merrill Groothuis / CBE International, 2024-02-14</li>
+<li><a href="https://www.christiandaily.co.kr/news/85971" target="_blank" rel="noopener noreferrer">'아내들이여 남편에게 복종하라'… 어떻게 이해해야 하는가</a> — 기독일보, 이민선, 2020-01-23</li>
+<li><a href="https://hangl.net/com_kor_mhw/144957" target="_blank" rel="noopener noreferrer">메튜 헨리 주석, 에베소서 05장</a> — HANGL NOCR, 발행일 미확인(옛 주석)</li>
+<li><a href="https://enduringword.com/bible-commentary/ephesians-6/" target="_blank" rel="noopener noreferrer">Ephesians 6 Commentary</a> — David Guzik / Enduring Word</li>
+<li><a href="https://enduringword.com/bible-commentary/colossians-3/" target="_blank" rel="noopener noreferrer">Colossians 3 Commentary</a> — David Guzik / Enduring Word</li>
+<li><a href="https://www.kscoramdeo.com/news/articleView.html?idxno=19852" target="_blank" rel="noopener noreferrer">남편과 아내는 피차 복종하는 관계</a> — 코람데오닷컴, 김민호, 2021-05-26</li>
+</ul>
+<hr>
+<p class="tags"><span>#성경</span> <span>#남편의도리</span> <span>#아내의도리</span> <span>#자녀의도리</span> <span>#에베소서</span> <span>#골로새서</span> <span>#베드로전서</span> <span>#피차복종</span> <span>#성경속가정</span> <span>#부부관계</span></p>
+</article>
+  </main>
+</div>
+<script>
+(function () {
+  var links = Array.prototype.slice.call(document.querySelectorAll('.sidebar a[data-slug]'));
+  var posts = Array.prototype.slice.call(document.querySelectorAll('.post[data-slug]'));
+  function slugFromHash() {
+    try { return decodeURIComponent(location.hash.replace(/^#/, '')); } catch (e) { return ''; }
+  }
+  function show(slug) {
+    var found = posts.some(function (p) { return p.dataset.slug === slug; });
+    if (!found && posts.length) slug = posts[0].dataset.slug;
+    posts.forEach(function (p) { p.classList.toggle('active', p.dataset.slug === slug); });
+    links.forEach(function (a) { a.classList.toggle('active', a.dataset.slug === slug); });
+    var active = posts.filter(function (p) { return p.dataset.slug === slug; })[0];
+    if (active) {
+      var h1 = active.querySelector('h1');
+      if (h1) document.title = h1.textContent;
+    }
+    document.body.classList.remove('nav-open');
+    window.scrollTo(0, 0);
+  }
+  window.addEventListener('hashchange', function () { show(slugFromHash()); });
+  document.querySelector('.menu-btn').addEventListener('click', function () {
+    document.body.classList.toggle('nav-open');
+  });
+  document.querySelector('.backdrop').addEventListener('click', function () {
+    document.body.classList.remove('nav-open');
+  });
+  show(slugFromHash());
+})();
+</script>
+</body>
+</html>
